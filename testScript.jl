@@ -8,7 +8,7 @@ pathname = raw"/Users/andrepdasilva/Documents/Projects/MetaRange_Jana/run_mytest
 SD = read_input(pathname)
 run_simulation!(SD)
 
-next meeeting (jana_robin)
+#next meeeting (jana_robin)
 #where is the output?
 #How to read the output? 
 #what are the ouput metrics?
