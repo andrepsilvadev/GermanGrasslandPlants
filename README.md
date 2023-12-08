@@ -1,6 +1,7 @@
 # MetaRange
 
-Folder structure: 
+Folder structure:
+
 data - This directory contains the raw data used for the project.
 
 input - This directory holds any intermediate files or data transformations that are generated during the analysis process. 
