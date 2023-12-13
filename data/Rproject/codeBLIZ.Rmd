@@ -1,0 +1,549 @@
+---
+title: "code BLIZ"
+author: "Leticia Duarte"
+output: 
+  html_notebook:
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 13px;
+  }
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+h1 { /* Header 1 */
+  font-size: 20px;
+  font-weight: bold;
+}
+h2 { /* Header 2 */
+    font-size: 17px;
+  font-weight: bold;
+}
+h3 { /* Header 3 */
+    font-size: 15px;
+  font-weight: bold;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre{ /* Code block - determines code spacing between lines */
+    font-size: 12px;
+}
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+    margin-top: 24xpx;
+}
+</style>
+
+
+# Summary of the analyses:
+
+In **task 1**, I prepared the species list for both Bavaria and Baden-Württemberg, and joined both lists.
+
+- For Bavaria I used the species found in https://www.lfu.bayern.de/natur/rote_liste_pflanzen/doc/pflanzen/rl_pflanzen_nach_kategorien.pdf
+It was hard to format the data.
+
+- For Baden-Württemberg, I went to https://www.gbif.org/occurrence/search?occurrence_status=present&q= to download the species list with occurrences, and used the following filters: 
+  - "Scientific name" - "Tracheophyta"
+  - "Location" - "Including coordinates"
+  - "Administrative areas" - "Baden-Württemberg"
+  
+**Tasks 2 to 4** were done in the beginning of the analyses to calculate the number of occurrences in Bavaria of each species included in https://www.lfu.bayern.de/natur/rote_liste_pflanzen/doc/pflanzen/rl_pflanzen_nach_kategorien.pdf.
+
+- First (**task 2**), I downloaded the species list for Bavaria from GBIF, just like I explained previously for Baden-Württemberg. I also checked BIEN database, but all occurences were taken from GBIF, so I ended up not using it.
+- Then (**task 3**), I merged the species list from GBIF with the one from https://www.lfu.bayern.de/natur/rote_liste_pflanzen/doc/pflanzen/rl_pflanzen_nach_kategorien.pdf to see which species had occurrences in Bavaria.
+- Finally (**task 4**), I calculated the number of occurrences for each species
+
+In **Task 5** I looked for the available traits and checked which species had information for all traits.
+
+For each trait I did the following steps:
+
+- Download data
+- Check units and filter only the data with the right units
+- Select the important columns (the ones with the values, methods and units)
+- Clean data, which mostly includes simply changing column names to be more readable and to have the data ready to join with the other traits at the end
+- Merge data with species list and see how many species matched 
+
+(I'm only showing the databases/traits that matched with the species list and were used in the end. However, I followed these steps for every database I downloaded to check if there was information for our species)
+
+After checking and preparing all traits (Seed number, Growth rate, Wetmass, and Dispersal distance), I joined them, in order to see which species had information for them &rarr; **Complete data**
+
+But because wetmass was a limiting variable, I decided to do a second compilation with species that had information for drymass in case there's a formula to convert drymass to wetmass &rarr; **Extra data**
+
+In **Task 5.2** I calculated mortality rate using an allometric equation with wetmass.
+For carrying capacity (or max planting density), I had to search manually in FloraWeb and articles, since this trait did not appear in any databases.
+
+
+Finally, I formatted all the data to compile information for all species in one table.
+
+Detailed information about each step can be found in the code below.
+
+
+# Task 1 - Species list
+
+## Species from Bavaria
+
+```{r}
+library(stringr)
+
+#read csv as a text object
+plants_bavaria <- readLines("Data/Rote_List_Bayern.csv")
+
+#simplify data by collapsing everything with a space as delimiter
+simplified_plants = paste(plants_bavaria, collapse = " ")
+
+#run a for loop where we are looking for every "space + capital letter" and want to replace with a "new line + capital letter"
+for (x in LETTERS) {
+simplified_plants = gsub(paste0(" ",x), paste0("\n",x), simplified_plants)
+}
+
+#formatting data
+sp_bavaria = 
+  simplified_plants |>
+  strsplit(split = "\n") |> #split lines in substrings
+  unlist() |>
+  gsub(paste0(" ","´"), paste0(""), x = _) |> #fix text (eliminate "´")
+  gsub(paste0(" ","x"), paste0(""), x = _) |> #fix text (eliminate "x")
+  unique() #remove duplicates
+
+#change name of id column
+sp_bavaria <- data.frame(sp_bavaria)
+colnames(sp_bavaria) <- c('species')
+
+```
+
+
+## Species from Baden-Württemberg
+
+```{r}
+
+GBIF_baden <- read.csv("Data/SpeciesList_Baden.csv", sep = "\t")
+
+#number of species with occurrences in Baden
+length(unique(GBIF_baden$species))
+
+#clean data
+sp_baden <- GBIF_baden[c("species")]
+#eliminate empty rows
+sp_baden <- sp_baden[sp_baden$species != "", , drop=FALSE] 
+
+```
+
+## Join species lists
+
+```{r}
+
+#join species list from Bavaria and Baden-Württemberg
+BB_Species <- merge(sp_bavaria,sp_baden, by = "species", all = TRUE)
+
+length(unique(BB_Species$species))
+
+```
+
+
+# Task 2 - Occurrence data from GBIF and BIEN
+## BIEN
+
+All the data I found from Bavaria in this database is from GBIF (see "datasource" column), and it's much less than in GBIF, so I didn't use these occurrences
+
+## GBIF
+
+Downloaded data for Bavaria occurrences
+
+```{r}
+GBIF_bav <- read.csv("Data/SpeciesList_Bavaria.csv", sep = "\t")
+
+#number of occurrences
+sum(GBIF_bav$numberOfOccurrences)
+
+#number of species with occurrences in Bavaria
+length(unique(GBIF_bav$species))
+
+```
+
+
+# Tasks 3 - Join species names and occurrence data
+
+```{r}
+
+#join GBIF Bavaria data with sp csv
+merge_gbif_bav <- merge(sp_bavaria, GBIF_bav, by = "species")
+
+#calculate the number of different species
+length(unique(merge_gbif_bav$species))
+
+```
+
+# Task 4 - Calculate occurrences in Bavaria for each species
+
+```{r}
+
+#calculate nº of occurrences for each species
+occur_sp_bav <- aggregate(numberOfOccurrences ~ species, data=merge_gbif_bav, sum)
+
+#download occurrence file
+write.csv(occur_sp_bav, "Results/Occurrences_sp_bavaria.csv")
+
+```
+
+# Task 5.1 - Traits
+
+Here I am only showing the traits I ended up using, or others that might be interesting (i.e. drymass)
+
+
+## Traits LEDA
+
+Files (.txt) from this database have formatting problems - need to remove the first few rows to be read
+
+### Reproductive rate - Number of Seeds
+
+Filtered only values with unit = 'per ramet/tussock or individual plant ', in order to be consistent. 
+
+```{r}
+
+seed_number <- read.csv2("Data/seed_number.txt", quote = "", dec = ".")
+
+#clean data
+unique(seed_number$reproduction.unit.measured) #check units
+SeedNumber <- subset(seed_number, reproduction.unit.measured == 'per ramet/tussock or individual plant ') #filter units
+SeedNumber <- SeedNumber[c("SBS.name","single.value","general.method","reproduction.unit.measured")] #select columns
+names(SeedNumber)[names(SeedNumber) == 'SBS.name'] <- 'species' #change name
+names(SeedNumber)[names(SeedNumber) == 'single.value'] <- 'seed_number' #change name
+
+#check if values are all numeric
+str(SeedNumber)
+
+#merge data with species list
+merge_seeds <- merge(BB_Species, SeedNumber, by = "species")
+
+#check matched data
+length(unique(merge_seeds$species))
+
+```
+
+## Traits TRY
+
+### Growth Rate
+
+Filtered only values with method = 'ann. rad. gr' and with unit = "mm", in order to be consistent.
+
+```{r}
+growth_rate <- read.delim("Data/PlantGrowthRate.txt")
+
+#clean data
+unique(growth_rate$OrigUnitStr) #check units
+GrowthRate <- subset(growth_rate, TraitID == 587 & OrigUnitStr == 'mm' & OriglName == 'ann. rad. gr') #filter rows with the correct data and units
+GrowthRate <- GrowthRate[c("AccSpeciesName","OriglName","OrigValueStr","OrigUnitStr")] #select columns
+names(GrowthRate)[names(GrowthRate) == 'AccSpeciesName'] <- 'species' #change name
+names(GrowthRate)[names(GrowthRate) == 'OriglName'] <- 'growth_method' #change name
+names(GrowthRate)[names(GrowthRate) == 'OrigValueStr'] <- 'growth_rate_mm' #change name
+names(GrowthRate)[names(GrowthRate) == 'OrigUnitStr'] <- 'growth_unit' #change name
+
+#check if values are all numeric
+str(GrowthRate)
+#edit the wrong values manually (there was a value with "o.5" instead of "0.5" (row name 20759) & "0.2.5" instead of "0.25" (row name 23795))
+#GrowthRate <- edit(GrowthRate)
+#convert to numeric
+GrowthRate$growth_rate_mm <- as.numeric(GrowthRate$growth_rate_mm)
+
+
+#merge data with species list
+merge_growth <- merge(BB_Species, GrowthRate, by = "species")
+
+#check matched data
+length(unique(merge_growth$species))
+
+```
+
+
+### Dry mass
+
+Excluded data that was from only some parts of the plant or from young plants.
+Used the column "StdValue" which had the standard values in g
+
+```{r}
+dry_mass <- read.delim("Data/PlantDryMass.txt")
+
+#clean data
+unique(dry_mass$OrigUnitStr) #check units
+unique(dry_mass$OriglName) #check units
+DryMass <- subset(dry_mass, TraitID == 700 & !OriglName %in% c('total dry mass (Excl. leaf)','Plant dry mass (2 week seedling)','Root.Bio')) #filter rows with the correct data
+DryMass <- DryMass[c("AccSpeciesName","OriglName","StdValue","UnitName")] #select columns
+names(DryMass)[names(DryMass) == 'AccSpeciesName'] <- 'species' #change name
+names(DryMass)[names(DryMass) == 'OriglName'] <- 'drymass_method' #change name
+names(DryMass)[names(DryMass) == 'StdValue'] <- 'drymass_g' #change name
+names(DryMass)[names(DryMass) == 'UnitName'] <- 'drymass_unit' #change name
+
+#check if values are all numeric
+str(DryMass)
+
+#merge data with species list
+merge_drymass <- merge(BB_Species, DryMass, by = "species")
+
+#check matched data
+length(unique(merge_drymass$species))
+
+```
+
+
+## Wetmass - PlantNE database
+
+From: https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2840
+
+Used the biomass data from the control groups used in this study.
+Filtered data with unit "g" and "g " because they are the same, and to be consistent.
+
+```{r}
+
+plantNE_data <- read.csv("Data/PlantNE_Biomass.csv", dec = ".")
+
+#clean data
+unique(plantNE_data$Unit) #check units
+plantNE <- subset(plantNE_data, Unit %in% c('g','g ')) #filter rows with the correct units
+plantNE <- plantNE[c("Species","CK_M","Unit")] #select columns
+names(plantNE)[names(plantNE) == 'Species'] <- 'species' #change name
+names(plantNE)[names(plantNE) == 'CK_M'] <- 'wetmass_g' #change name
+
+#check if values are all numeric
+str(plantNE)
+
+#merge data with species list
+merge_plantNE <- merge(BB_Species, plantNE, by = "species")
+
+#check matched data
+length(unique(merge_plantNE$species))
+
+```
+
+## Dispersal Distance
+
+From: Lososová Z., Axmanová I., Chytrý M., Midolo G., Abdulhak S., Karger D.N., Renaud J., Van Es J., Vittoz P. & Thuiller W. (2023). Seed dispersal distance classes and dispersal modes for the European flora. Global Ecology and Biogeography.
+https://onlinelibrary.wiley.com/doi/full/10.1111/geb.13712
+
+**They have the data in dispersal classes:**
+
+(dispersal distances in m for 50 and 99% seeds)
+
+- class 1: 0.1-1 m
+
+- class 2: 1-5 m
+
+- class 3: 2-15 m
+
+- class 4: 40-150 m
+
+- class 5: 10-500 m
+
+- class 6: 400-1500 m 
+
+- (class 7: 500-5000 m - **excluded this class because it's dispersal by humans**)
+
+**Used the 50% as the mean distance, and the 99% as the max distance**
+
+```{r}
+
+dispersal <- read.csv2("Data/Lososova_et_al_2023_Dispersal.csv")
+
+#clean data
+Dispersal <- dispersal[c("Taxon","Dispersal.distance.class..1.6.")] #select columns
+names(Dispersal)[names(Dispersal) == 'Taxon'] <- 'species' #change name
+names(Dispersal)[names(Dispersal) == 'Dispersal.distance.class..1.6.'] <- 'dispersal_class_1-6' #change name
+
+##convert class data in mean_distance and max_distance
+dispersal_key = read.csv("Data/dispersal_classes.csv")
+
+for (row in seq_len(nrow(dispersal_key))) {
+    curr_class = dispersal_key[row, "class"]
+    curr_mean = dispersal_key[row, "mean_dist_m"]
+    curr_max = dispersal_key[row, "max_dist_m"]
+    
+    Dispersal$mean_dist_m[Dispersal$'dispersal_class_1-6' == curr_class] = curr_mean
+    Dispersal$max_dist_m[Dispersal$'dispersal_class_1-6' == curr_class] = curr_max
+}
+
+#check if values are all numeric
+str(Dispersal)
+
+#merge data with species list
+merge_dispersal <- merge(BB_Species, Dispersal, by = "species")
+
+#check matched data
+length(unique(merge_dispersal$species))
+
+
+```
+
+# Join all trait data
+
+## 1) Complete data
+
+Complete data includes: seed number, max and mean dispersal distances, growth rate, and wetmass
+
+```{r}
+
+traits <- 
+  BB_Species |> 
+  merge(SeedNumber, by = "species") |> 
+  merge(Dispersal, by = "species") |>
+  merge(GrowthRate, by = "species") |>
+  merge(plantNE, by = "species")
+  
+unique(traits$species)  
+
+```
+
+## 2) Extra data
+
+Extra data includes: seed number, max and mean dispersal distances, growth rate, and **drymass** in case there's a formula to convert drymass in wetmass
+
+
+```{r}
+
+traits_extra <- 
+  BB_Species |> 
+  merge(SeedNumber, by = "species") |> 
+  merge(Dispersal, by = "species") |>
+  merge(GrowthRate, by = "species") |>
+  merge(DryMass, by = "species")
+  
+unique(traits_extra$species)  
+
+```
+# Task 5.2 - Other traits
+
+## Mortality rate (calculated from biomass)
+
+“Marba et al. (2007)  applied allometric theory to the relationship between size and important life-history parameters and reported that mortality and birth rates scaled as the –0.25 power and life span as the 0.25 power of plant mass from phytoplankton to trees.” https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2745.2008.01415.x 
+
+Allometric equation from Marba, N., Duarte, C.M. & Agustí S. (2007) Allometric scaling of plant life history. Proceedings of the National Academy of Sciences of the United States of America, 104, 15777–15780.https://www.pnas.org/doi/abs/10.1073/pnas.0703476104
+
+```{r}
+
+library(dplyr)
+traits <- traits %>% mutate(mortality = -0.25^wetmass_g)
+
+print(traits)
+
+```
+
+## Carrying capacity 
+(or max planting density) I searched for each species that had data for the other traits. Found in FloraWeb for some species "max planting density"; for one species found information in GBIF; others from other sites; and others I could not find any information. This was a really hard variable to look for, because there's nothing in databases
+
+# Formatting trait data
+
+Selected only the columns with the trait values to create a final table.
+When you join all traits, it creates multiple rows for each species, so I created one row per species. For that, I calculated the mean of the different values for each species.
+
+```{r}
+
+#select only columns with the values for final table
+
+simplified_traits <- traits[,c("species","seed_number","mean_dist_m","max_dist_m","growth_rate_mm","wetmass_g","mortality")]
+
+#create final table
+final <- simplified_traits[seq_along(unique(simplified_traits$species)),]
+
+#delete data from table
+final[TRUE, TRUE] = NA
+
+#add species to column
+final$species = unique(simplified_traits$species)
+
+#add traits
+
+for (row in seq_len(nrow(final))) {
+  sp = final$species[row]
+  cat("Analyzing", sp, "\n")
+  sp_rows = simplified_traits[simplified_traits$species == sp,]
+  for (col in seq_len(ncol(sp_rows))) {
+    if (col == 1) next
+    cat(paste0("\tAnalyzing column", colnames(sp_rows)[col], "..."))
+    if (length(unique(sp_rows[,col])) == 1) {
+      cat("All values equal.\n")
+      final[row,col] = sp_rows[1,col]
+    } else {
+      if (is.character(sp_rows[,col])) {
+        stop("You have a character value in this column!")
+      } else {
+        cat("Calculated mean.\n")
+        final[row,col] = mean(sp_rows[,col])
+      }
+    }
+  }
+}
+
+print(final)
+
+```
+
+```{r}
+
+#select only columns with the values for final table
+
+simplified_traits_extra <- traits_extra[,c("species","seed_number","mean_dist_m","max_dist_m","growth_rate_mm","drymass_g")]
+
+#create final table
+final_extra <- simplified_traits_extra[seq_along(unique(simplified_traits_extra$species)),]
+
+#delete data from table
+final_extra[TRUE, TRUE] = NA
+
+#add species to column
+final_extra$species = unique(simplified_traits_extra$species)
+
+#add traits
+
+for (row in seq_len(nrow(final_extra))) {
+  sp_extra = final_extra$species[row]
+  cat("Analyzing", sp, "\n")
+  sp_rows_extra = simplified_traits_extra[simplified_traits_extra$species == sp_extra,]
+  for (col in seq_len(ncol(sp_rows_extra))) {
+    if (col == 1) next
+    cat(paste0("\tAnalyzing column", colnames(sp_rows_extra)[col], "..."))
+    if (length(unique(sp_rows_extra[,col])) == 1) {
+      cat("All values equal.\n")
+      final_extra[row,col] = sp_rows_extra[1,col]
+    } else {
+      if (is.character(sp_rows_extra[,col])) {
+        stop("You have a character value in this column!")
+      } else {
+        cat("Calculated mean.\n")
+        final_extra[row,col] = mean(sp_rows_extra[,col])
+      }
+    }
+  }
+}
+
+print(final_extra)
+
+```
+
+
+# Export data
+
+```{r}
+#tables with units and other information
+write.csv(traits, "Results/traits_complete.csv")
+write.csv(traits_extra, "Results/traits_extra.csv")
+
+#simplified tables
+write.csv(final, "Results/traits_complete_simplified.csv")
+write.csv(final_extra, "Results/traits_extra_simplified.csv")
+
+#final table
+merge_final <- merge(final, final_extra, by = intersect(colnames(final), colnames(final_extra)), all = TRUE)
+write.csv(merge_final, "Results/final_traits.csv")
+
+```
+
+<br><br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
