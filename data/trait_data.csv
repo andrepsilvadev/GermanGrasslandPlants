@@ -1,18 +1,14 @@
-"","species","seed_number_mean","mean_dist_m_mean","max_dist_m_mean","growth_rate_mm_mean","wetmass_g_mean","mortality_mean","density_sqMeter_mean","seed_number_std","mean_dist_m_std","max_dist_m_std","growth_rate_mm_std","wetmass_g_std","mortality_std","density_sqMeter_std"
-"1","Achillea millefolium",2473.01666666667,1,5,0.34,1.11486753246753,-0.418963243661201,4.69499809729024,1842.02187966344,0,0,0.0400003607552411,1.43447747915267,0.280201267684059,0
-"2","Centaurea diffusa",56,2,15,1.5,10.4,-5.4774205922939e-07,500,0,0,0,0,0,0,0
-"3","Centaurea jacea",1425,2,15,0.7,1.88537101449275,-0.283003788771187,NA,1375.33224598769,0,0,0,2.72196211774703,0.240299706018124,0
-"4","Galium mollugo",10867,1,5,0.18,1.0850987804878,-0.481058122572737,17,9160.97250041578,0,0,0,3.55530800693418,0.25774529326629,0
-"5","Galium verum",58.35,1,5,0.26,0.515169333333333,-0.583065283165905,NA,45.7563554907579,0,0,0,0.511156351159291,0.268644277461166,0
-"6","Medicago lupulina",2103.125,0.1,1,2.5,0.0318,-0.956873422962767,NA,1962.05128489681,0,0,0,0,0,0
-"7","Ononis spinosa",300,1,5,2.465,0.0173,-0.976302411759932,NA,0,0,0,1.54143608692804,0,0,0
-"8","Papaver dubium",38243.5714285714,1,5,1.2,6.5,-0.0001220703125,NA,25647.9514991723,0,0,0,0,0,0
-"9","Plantago lanceolata",2714.16666666667,0.1,1,0.5,3.29819775280899,-0.142577583173339,NA,3274.59305625479,0,0,0,3.2197477816947,0.217932748227563,0
-"10","Rumex acetosa",537.133333333333,1,5,1,1.87434375,-0.163502966529457,NA,711.089252076138,0,0,0,1.31856080497565,0.15761210437397,0
-"11","Salix reticulata",3060,10,500,0.1,16.95,-5.36723344119747e-10,0.316294608659553,0,0,0,0,2.89913780286484,7.53896553527774e-10,0
-"12","Senecio vulgaris",8741.16666666667,10,500,3,6.8,-8.05363715071347e-05,NA,13473.0242283291,0,0,0,0,0,0
-"13","Solanum nigrum",31723.1666666667,400,1500,2,14.2,-2.8232421102196e-09,11,46095.1955465712,0,0,0,0,0,0
-"14","Solidago canadensis",9914,10,500,2,0.15245,-0.811174122300955,2.47105163015276,6163.88493134066,0,0,0,0.0472322915144092,0.0519479875476914,0
-"15","Sonchus asper",47470.5333333333,10,500,1.6,10.9,-2.73871029614695e-07,NA,149165.120160593,0,0,0,0,0,0
-"16","Trifolium pratense",530,1,5,0.56,0.0352,-0.952373907319402,NA,0,0,0,0,0,0,0
-"17","Veronica chamaedrys",59.8,0.1,1,0.5,2.0726275,-0.191913237300418,NA,110.901171350433,0,0,0,1.62247626705283,0.222822401863577,0
+seed_number_mean, mean of the number of seeds per individual plant
+seed_number_std, standard deviation of the number of seeds per individual plant
+mean_dist_m_mean, mean of the mean dispersal distances in meters
+mean_dist_m_std, standard deviation of the mean dispersal distances in meters
+max_dist_m_mean, mean of the maximum dispersal distances in meters
+max_dist_m_std, standard deviation of the maximum dispersal distances in meters
+growth_rate_mm_mean, mean of the annual radial growth rate in milimeters
+growth_rate_mm_std, standard deviation of the annual radial growth rate in milimeters
+wetmass_g_mean, mean of the whole plant wetmass in grams
+wetmass_g_std, standard deviation of the whole plant wetmass in grams
+mortality_mean, mean of the mortality rate calculated from wetmass with an allometric equation
+mortality_std, standard deviation of the mortality rate calculated from wetmass
+density_sqMeter_mean, mean of the maximum plant densities in square meters
+density_sqMeter_std, standard deviation of the maximum plant densities in square meters
