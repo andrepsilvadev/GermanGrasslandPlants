@@ -67,6 +67,8 @@ In the **Step 2**, I extracted the landuse classes for each of the selected spec
 
 In **Part 1** of this task, the species selected were only those that had a value other than <b style="font-family: monospace;">`r colorize("NA", "red")`</b> in the ```density_sqMeter_mean``` trait.
 
+`r colorize("All data files necessary can be found", "darkorange")` [here](https://drive.google.com/drive/folders/1QCVFMm3nQ60RlQPFXPCUdth6jKWRl_Fq?usp=drive_link).
+
 ## 1 - Extracting Bioclimatic Variables
 
 First, I imported the occurrence data of the selected species.

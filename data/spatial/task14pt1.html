@@ -11,7 +11,7 @@
 
 <meta name="author" content="Afonso Barrocal" />
 
-<meta name="date" content="2024-01-28" />
+<meta name="date" content="2024-01-29" />
 
 <title>codeBLIZ</title>
 
@@ -2864,7 +2864,7 @@ border-radius: 0px;
 <h3 class="subtitle">Task1.4 - Climate and land-use scenarios (Part
 1)</h3>
 <h4 class="author">Afonso Barrocal</h4>
-<h4 class="date">2024-01-28</h4>
+<h4 class="date">2024-01-29</h4>
 
 </div>
 
@@ -2893,6 +2893,8 @@ from <span class="citation">Chen et al. (2020)</span>. The <strong>Step
 only those that had a value other than
 <b style="font-family: monospace;"><span style="color: red;">NA</span></b> in the
 <code>density_sqMeter_mean</code> trait.</p>
+<p><span style="color: darkorange;">All data files necessary can be
+found</span> <a href="https://drive.google.com/drive/folders/1QCVFMm3nQ60RlQPFXPCUdth6jKWRl_Fq?usp=drive_link">here</a>.</p>
 <div id="extracting-bioclimatic-variables" class="section level2">
 <h2>1 - Extracting Bioclimatic Variables</h2>
 <p>First, I imported the occurrence data of the selected species.</p>
@@ -3016,8 +3018,8 @@ getEValues &lt;- function(vector){
 <pre class="r"><code># run the list of species through the function and combine the result into a single dataframe
 dataset_climate &lt;- as.data.frame(do.call(rbind, lapply(los,getEValues)));gc()</code></pre>
 <pre><code>##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-## Ncells  4505750 240.7    7868787  420.3   6326362  337.9
-## Vcells 99594988 759.9  183199809 1397.8 152466534 1163.3</code></pre>
+## Ncells  4505795 240.7    7787544  415.9   6407851  342.3
+## Vcells 99595283 759.9  183661161 1401.3 152736223 1165.3</code></pre>
 <pre class="r"><code># see resulting dataframe
 rmarkdown::paged_table(dataset_climate)</code></pre>
 <div data-pagedtable="false">
@@ -3209,8 +3211,8 @@ dataset_landuse &lt;- as.data.frame(do.call(rbind,
                                          lapply(los,
                                                 getLUalues, nc = &quot;LU/126/GCAM_Demeter_LU_ssp1_rcp26_modelmean_2020.nc&quot;)));gc()</code></pre>
 <pre><code>##            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-## Ncells  4596095 245.5    7868787  420.3   7748037  413.8
-## Vcells 99796808 761.4  220159092 1679.7 219889470 1677.7</code></pre>
+## Ncells  4596135 245.5    7787544  415.9   7748085  413.8
+## Vcells 99797103 761.4  220473393 1682.1 206393793 1574.7</code></pre>
 <pre class="r"><code># see resulting dataframe
 rmarkdown::paged_table(dataset_landuse)</code></pre>
 <div data-pagedtable="false">
