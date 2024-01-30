@@ -59,7 +59,7 @@ colorize <- function(x, color) {
 
 In **Step 1**, I extracted the maximum and minimum mean temperature and the mean precipitation^[variables ```bio01``` and ```bio12```, respectively.] based on the spatial occurrences of the selected species. The raster layers of environmental variables were downloaded from the [CHELSA Database _Version 2.1_](https://chelsa-climate.org/downloads/), which has bioclimatic variables for the present (1981-2010) and the future (2011-2040, 2041-2070, and 2071-2100, for each of the 3 scenarios^[Scenarios: SSP126, SSP370, and SSP585.]).
 
-In the **Step 2**, I extracted the landuse classes for each of the selected species based on the spatial occurrences. After extracting land use data, the suitability of each species for each of the land use classes was calculated. The landuse data was downloaded from @Chen2020. The **Step 2** can be divided into 3 subtasks:
+In **Step 2**, I extracted the landuse classes for each of the selected species based on the spatial occurrences. After extracting land use data, the suitability of each species for each of the land use classes was calculated. The landuse data was downloaded from @Chen2020. The **Step 2** can be divided into 3 subtasks:
 
 * Selection of the Year for Extracting Land use Data;
 * Land use Data Processing;
