@@ -1,11 +1,14 @@
+Task 1.1 Data collection
+
+Methods_task1.1_BLIZ.nb.html: description of methods used in Task 1.1 data collection
+
 Code:
--> BLIZ.Rproj: R project
--> codeBLIZ.Rmd: Code to be run
--> codeBLIZ.nb.html: RMarkdown report with all the information
+-> Task1.1_BLIZ.Rproj: R project
+-> Task1.1_codeBLIZ.Rmd: Code to be run
+-> Task1.1_codeBLIZ.nb.html: RMarkdown report with all the information
 
 Data:
 -> Data files in https://drive.google.com/drive/folders/1x93UjAnduPXwROqXVnQeJ4JQbdVoKeom?usp=sharing
--> Data_References: table with all data references
 
 Results:
 -> Occurrences_bav&bw: table with number of occurrences of selected species in Bavaria and Baden-Württemberg
@@ -26,4 +29,6 @@ Results:
   - mortality_std: standard deviation of the mortality rate calculated from wetmass
   - density_sqMeter_mean: mean of the maximum plant densities in square meters
   - density_sqMeter_std: standard deviation of the maximum plant densities in square meters
+  - lambdaVals_mean: mean of the lambda values
+  - lambdaVals_std: standard deviation of the lambda values
 
