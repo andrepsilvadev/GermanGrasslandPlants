@@ -17,18 +17,41 @@ Results:
 
   - seed_number_mean: mean of the number of seeds per individual plant
   - seed_number_std: standard deviation of the number of seeds per individual plant
-  - mean_dist_m_mean: mean of the mean dispersal distances in meters
-  - mean_dist_m_std: standard deviation of the mean dispersal distances in meters
-  - max_dist_m_mean: mean of the maximum dispersal distances in meters
-  - max_dist_m_std: standard deviation of the maximum dispersal distances in meters
-  - growth_rate_mm_mean: mean of the annual radial growth rate in milimeters
-  - growth_rate_mm_std: standard deviation of the annual radial growth rate in milimeters
+  - germination_perc_mean: mean of the germination rate in percentage
+  - germination_perc_std: standard deviation of the germination rate in percentage
+  - density_sqMeter_mean: mean of the maximum plant densities in square meters
+  - density_sqMeter_std: standard deviation of the maximum plant densities in square meters
   - wetmass_g_mean: mean of the whole plant wetmass in grams
   - wetmass_g_std: standard deviation of the whole plant wetmass in grams
   - mortality_mean: mean of the mortality rate calculated from wetmass with an allometric equation
   - mortality_std: standard deviation of the mortality rate calculated from wetmass
-  - density_sqMeter_mean: mean of the maximum plant densities in square meters
-  - density_sqMeter_std: standard deviation of the maximum plant densities in square meters
+  - mean_dist_m_mean: mean of the mean dispersal distances in meters
+  - mean_dist_m_std: standard deviation of the mean dispersal distances in meters
+  - max_dist_m_mean: mean of the maximum dispersal distances in meters
+  - max_dist_m_std: standard deviation of the maximum dispersal distances in meters
   - lambdaVals_mean: mean of the lambda values
   - lambdaVals_std: standard deviation of the lambda values
 
+Values estimated from genus:
+-> For germination rate
+  - Eriophorum vaginatum
+
+-> For plant density
+  - Eriophorum vaginatum
+  - Fagus sylvatica
+  - Plantago lanceolata
+  - Poa pratensis & Poa trivialis
+  - Ranunculus acris & Ranunculus bulbosus
+  - Rumex acetosa
+  - Veronica chamaedrys
+  - Viola arvensis
+
+-> For lambda values
+  - Eriophorum vaginatum
+  - Fagus sylvatica
+  - Plantago lanceolata
+  - Poa pratensis & Poa trivialis
+  - Ranunculus acris & Ranunculus bulbosus
+  - Rumex acetosa
+  - Veronica chamaedrys
+  - Viola arvensis
