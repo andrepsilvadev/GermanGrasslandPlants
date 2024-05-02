@@ -1,11 +1,11 @@
 Task 1.1 Data collection
 
-Methods_task1.1_BLIZ.nb.html: description of methods used in Task 1.1 data collection
+Methods_Task1.1_data collection.nb.html: description of methods used in Task 1.1 data collection
 
 Code:
--> Task1.1_BLIZ.Rproj: R project
--> Task1.1_codeBLIZ.Rmd: Code to be run
--> Task1.1_codeBLIZ.nb.html: RMarkdown report with all the information
+-> in "src" - BLIZ_Task1.1_data collection.R: Code to be run
+-> in "reports" - BLIZ_Task1.1_data collection.Rmd: RMarkdown report
+-> in "reports" - BLIZ_Task1.1_data collection.html: RMarkdown report in html
 
 Data:
 -> Data files in https://drive.google.com/drive/folders/1x93UjAnduPXwROqXVnQeJ4JQbdVoKeom?usp=sharing
@@ -31,27 +31,3 @@ Results:
   - max_dist_m_std: standard deviation of the maximum dispersal distances in meters
   - lambdaVals_mean: mean of the lambda values
   - lambdaVals_std: standard deviation of the lambda values
-
-Values estimated from genus:
--> For germination rate
-  - Eriophorum vaginatum
-
--> For plant density
-  - Eriophorum vaginatum
-  - Fagus sylvatica
-  - Plantago lanceolata
-  - Poa pratensis & Poa trivialis
-  - Ranunculus acris & Ranunculus bulbosus
-  - Rumex acetosa
-  - Veronica chamaedrys
-  - Viola arvensis
-
--> For lambda values
-  - Eriophorum vaginatum
-  - Fagus sylvatica
-  - Plantago lanceolata
-  - Poa pratensis & Poa trivialis
-  - Ranunculus acris & Ranunculus bulbosus
-  - Rumex acetosa
-  - Veronica chamaedrys
-  - Viola arvensis
