@@ -1130,7 +1130,64 @@ species <- c("AchilleaMillefolium","EriophorumVaginatum","FagusSylvatica",
              "PlantagoLanceolata","PoaPratensis","PoaTrivialis","RanunculusAcris",
              "RanunculusBulbosus","RumexAcetosa","VeronicaChamaedrys","ViolaArvensis" )
 
-# creating files
+# creating files - part 1
+for(j in seq_along(species)){
+  for(i in seq_along(clim_list[c(1,4,7,10)])){
+    k <- fread(clim_list[c(1,4,7,10)][i])
+    for(c in seq_along(2011:2100)){
+      if(c < 10){
+        if(i == 1){
+          write.table(k,paste0("outputs/",species[j],"/SSP1 - land use/environment/temperature/Bio01_0",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+        } else {
+          if(i == 2){
+            write.table(k,paste0("outputs/",species[j],"/SSP5 - land use/environment/temperature/Bio01_0",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+          } else {
+            if(i == 3){
+              write.table(k,paste0("outputs/",species[j],"/SSP1 - land use/environment/precipitation/Bio12_0",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+            } else {
+            write.table(k,paste0("outputs/",species[j],"/SSP5 - land use/environment/precipitation/Bio12_0",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+            }
+          }
+        }
+      } else {
+        if(i == 1){
+          write.table(k,paste0("outputs/",species[j],"/SSP1 - land use/environment/temperature/Bio01_",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+        } else {
+          if(i == 2){
+            write.table(k,paste0("outputs/",species[j],"/SSP5 - land use/environment/temperature/Bio01_",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+          } else {
+            if(i == 3){
+              write.table(k,paste0("outputs/",species[j],"/SSP1 - land use/environment/precipitation/Bio12_",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+            } else {
+            write.table(k,paste0("outputs/",species[j],"/SSP5 - land use/environment/precipitation/Bio12_",c,".csv"),
+              col.names = T, row.names = F, sep = " ",
+              quote = FALSE)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# remove unnecessary objects
+rm(i,j,k,c)
+
+# creating files - part 2
 for(z in seq_along(species)){
   for(i in seq_along(clim_list)){
   
