@@ -537,40 +537,53 @@ BavBW <- mask(BavBW,tShape)
 a <- varnames(EVs)
 names(BavBW) <- a
 
+# create dummy raster
+s <- rast(nrow = 66,
+          ncol = 127,
+          xmin = 7.49895858764648,
+          xmax = 13.8480768585205,
+          ymin = 47.286860309177,
+          ymax = 50.5859435865614)
+crs(s)<- "epsg:4326"
+
+# resampling to match the 
+nBavBW <- resample(BavBW, s, method = "average")
+
+# remove unnecessary objects
+rm(s)
+invisible(gc())
+
 # structuring
 par(mfrow = c(4,3))
 
 # plotting the clipped rasters
 for(i in seq_along(names(BavBW))){
   if(i < 7){
-    plot(BavBW[[i]],
+    plot(nBavBW[[i]],
          range = c(-3.41,16.27),
          main = names(BavBW[[i]]))
   } else {
-    plot(BavBW[[i]],
+    plot(nBavBW[[i]],
          range = c(606.64,3283.36),
          main = names(BavBW[[i]]))
   }
 }
 
 # remove unnecessary objects
-rm(i)
-
-# remove unnecessary objects
-rm(EVs,tShape)
+rm(i,EVs,tShape)
 invisible(gc())
 
 # cropping rasters
-for(i in seq_along(names(BavBW))){
+for(i in seq_along(names(nBavBW))){
   
   # now save as CSV in MetaRange format
-  metarange <- round(as.array(BavBW[[i]]))
+  metarange <- round(as.array(nBavBW[[i]]))
   metarange[which(is.na(metarange))] <- "NaN"
   invisible(gc()) # garbage collection
   
   # Julia needs to have grid cells without values filled with "NaN"
   write.table(metarange,
-              paste0("clim/Future/Cropped/",names(BavBW)[i],".csv"),
+              paste0("clim/Future/Cropped/",names(nBavBW)[i],".csv"),
               col.names = F, row.names = F)
   
   invisible(gc()) # garbage collection
@@ -580,7 +593,7 @@ for(i in seq_along(names(BavBW))){
 }
 
 # removing unnecessary objects
-rm(i,a,BavBW,state,end,start)
+rm(i,a,BavBW,nBavBW,state,end,start)
 invisible(gc())
 
 ##### Step 2 - LAND USE/HABITAT SUITABILITY DATA #####
@@ -1271,10 +1284,10 @@ for(i in seq_along(species_list)){
   if(substr(species_list[i],14,14) == 1){
     if(substr(species_list[i],32,35) == 2015){
       for(x in seq_along(2011:2015)){
-        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_0",x,".csv"),
+        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_0",x,".csv"),
                     col.names = T, row.names = F, sep = " ",
                     quote = FALSE)
-        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_0",x,".csv"),
+        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_0",x,".csv"),
                     col.names = T, row.names = F, sep = " ",
                     quote = FALSE)
       }
@@ -1285,17 +1298,17 @@ for(i in seq_along(species_list)){
       if(substr(species_list[i],32,35) == 2020){
         for(x in seq_along(2016:2020)+5){
           if(x < 10){
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_0",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_0",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_0",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_0",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           } else {
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           }
@@ -1306,10 +1319,10 @@ for(i in seq_along(species_list)){
       } else {
         if(substr(species_list[i],32,35) == 2025){
           for(x in seq_along(2021:2025)+10){
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           }
@@ -1319,10 +1332,10 @@ for(i in seq_along(species_list)){
         } else {
           if(substr(species_list[i],32,35) == 2030){
             for(x in seq_along(2026:2030)+15){
-              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                           col.names = T, row.names = F, sep = " ",
                           quote = FALSE)
-              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                           col.names = T, row.names = F, sep = " ",
                           quote = FALSE)
             }
@@ -1332,10 +1345,10 @@ for(i in seq_along(species_list)){
           } else {
             if(substr(species_list[i],32,35) == 2035){
               for(x in seq_along(2031:2035)+20){
-                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                             col.names = T, row.names = F, sep = " ",
                             quote = FALSE)
-                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                             col.names = T, row.names = F, sep = " ",
                             quote = FALSE)
               }
@@ -1345,10 +1358,10 @@ for(i in seq_along(species_list)){
             } else {
               if(substr(species_list[i],32,35) == 2040){
                 for(x in seq_along(2036:2040)+25){
-                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                               col.names = T, row.names = F, sep = " ",
                               quote = FALSE)
-                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                               col.names = T, row.names = F, sep = " ",
                               quote = FALSE)
                 }
@@ -1358,10 +1371,10 @@ for(i in seq_along(species_list)){
               } else {
                 if(substr(species_list[i],32,35) == 2045){
                   for(x in seq_along(2041:2045)+30){
-                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                 col.names = T, row.names = F, sep = " ",
                                 quote = FALSE)
-                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                 col.names = T, row.names = F, sep = " ",
                                 quote = FALSE)
                   }
@@ -1371,10 +1384,10 @@ for(i in seq_along(species_list)){
                 } else {
                   if(substr(species_list[i],32,35) == 2050){
                     for(x in seq_along(2046:2050)+35){
-                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                   col.names = T, row.names = F, sep = " ",
                                   quote = FALSE)
-                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                   col.names = T, row.names = F, sep = " ",
                                   quote = FALSE)
                     }
@@ -1384,10 +1397,10 @@ for(i in seq_along(species_list)){
                   } else {
                     if(substr(species_list[i],32,35) == 2055){
                       for(x in seq_along(2051:2055)+40){
-                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                     col.names = T, row.names = F, sep = " ",
                                     quote = FALSE)
-                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                     col.names = T, row.names = F, sep = " ",
                                     quote = FALSE)
                       }
@@ -1397,10 +1410,10 @@ for(i in seq_along(species_list)){
                     } else {
                       if(substr(species_list[i],32,35) == 2060){
                         for(x in seq_along(2056:2060)+45){
-                          write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                          write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                       col.names = T, row.names = F, sep = " ",
                                       quote = FALSE)
-                          write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                          write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                       col.names = T, row.names = F, sep = " ",
                                       quote = FALSE)
                         }
@@ -1410,10 +1423,10 @@ for(i in seq_along(species_list)){
                       } else {
                         if(substr(species_list[i],32,35) == 2065){
                           for(x in seq_along(2061:2065)+50){
-                            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                         col.names = T, row.names = F, sep = " ",
                                         quote = FALSE)
-                            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                         col.names = T, row.names = F, sep = " ",
                                         quote = FALSE)
                           }
@@ -1423,10 +1436,10 @@ for(i in seq_along(species_list)){
                         } else {
                           if(substr(species_list[i],32,35) == 2070){
                             for(x in seq_along(2066:2070)+55){
-                              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                           col.names = T, row.names = F, sep = " ",
                                           quote = FALSE)
-                              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                           col.names = T, row.names = F, sep = " ",
                                           quote = FALSE)
                             }
@@ -1436,10 +1449,10 @@ for(i in seq_along(species_list)){
                           } else {
                             if(substr(species_list[i],32,35) == 2075){
                               for(x in seq_along(2071:2075)+60){
-                                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                             col.names = T, row.names = F, sep = " ",
                                             quote = FALSE)
-                                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                             col.names = T, row.names = F, sep = " ",
                                             quote = FALSE)
                               }
@@ -1449,10 +1462,10 @@ for(i in seq_along(species_list)){
                             } else {
                               if(substr(species_list[i],32,35) == 2080){
                                 for(x in seq_along(2076:2080)+65){
-                                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                               col.names = T, row.names = F, sep = " ",
                                               quote = FALSE)
-                                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                               col.names = T, row.names = F, sep = " ",
                                               quote = FALSE)
                                 }
@@ -1462,10 +1475,10 @@ for(i in seq_along(species_list)){
                               } else {
                                 if(substr(species_list[i],32,35) == 2085){
                                   for(x in seq_along(2081:2085)+70){
-                                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                                 col.names = T, row.names = F, sep = " ",
                                                 quote = FALSE)
-                                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                 col.names = T, row.names = F, sep = " ",
                                                 quote = FALSE)
                                   }
@@ -1475,10 +1488,10 @@ for(i in seq_along(species_list)){
                                 } else {
                                   if(substr(species_list[i],32,35) == 2090){
                                     for(x in seq_along(2086:2090)+75){
-                                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                                   col.names = T, row.names = F, sep = " ",
                                                   quote = FALSE)
-                                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                   col.names = T, row.names = F, sep = " ",
                                                   quote = FALSE)
                                     }
@@ -1488,10 +1501,10 @@ for(i in seq_along(species_list)){
                                   } else {
                                     if(substr(species_list[i],32,35) == 2095){
                                       for(x in seq_along(2091:2095)+80){
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
                                       }
@@ -1500,10 +1513,10 @@ for(i in seq_along(species_list)){
                                       rm(x)
                                     } else {
                                       for(x in seq_along(2096:2100)+85){
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP1 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
                                       }
@@ -1527,10 +1540,10 @@ for(i in seq_along(species_list)){
   } else {
     if(substr(species_list[i],32,35) == 2015){
       for(x in seq_along(2011:2015)){
-        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_0",x,".csv"),
+        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_0",x,".csv"),
                     col.names = T, row.names = F, sep = " ",
                     quote = FALSE)
-        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_0",x,".csv"),
+        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_0",x,".csv"),
                     col.names = T, row.names = F, sep = " ",
                     quote = FALSE)
       }
@@ -1541,17 +1554,17 @@ for(i in seq_along(species_list)){
       if(substr(species_list[i],32,35) == 2020){
         for(x in seq_along(2016:2020)+5){
           if(x < 10){
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_0",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_0",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_0",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_0",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           } else {
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           }
@@ -1562,10 +1575,10 @@ for(i in seq_along(species_list)){
       } else {
         if(substr(species_list[i],32,35) == 2025){
           for(x in seq_along(2021:2025)+10){
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
-            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                         col.names = T, row.names = F, sep = " ",
                         quote = FALSE)
           }
@@ -1575,10 +1588,10 @@ for(i in seq_along(species_list)){
         } else {
           if(substr(species_list[i],32,35) == 2030){
             for(x in seq_along(2026:2030)+15){
-              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                           col.names = T, row.names = F, sep = " ",
                           quote = FALSE)
-              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                           col.names = T, row.names = F, sep = " ",
                           quote = FALSE)
             }
@@ -1588,10 +1601,10 @@ for(i in seq_along(species_list)){
           } else {
             if(substr(species_list[i],32,35) == 2035){
               for(x in seq_along(2031:2035)+20){
-                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                             col.names = T, row.names = F, sep = " ",
                             quote = FALSE)
-                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                             col.names = T, row.names = F, sep = " ",
                             quote = FALSE)
               }
@@ -1601,10 +1614,10 @@ for(i in seq_along(species_list)){
             } else {
               if(substr(species_list[i],32,35) == 2040){
                 for(x in seq_along(2036:2040)+25){
-                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                               col.names = T, row.names = F, sep = " ",
                               quote = FALSE)
-                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                               col.names = T, row.names = F, sep = " ",
                               quote = FALSE)
                 }
@@ -1614,10 +1627,10 @@ for(i in seq_along(species_list)){
               } else {
                 if(substr(species_list[i],32,35) == 2045){
                   for(x in seq_along(2041:2045)+30){
-                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                 col.names = T, row.names = F, sep = " ",
                                 quote = FALSE)
-                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                 col.names = T, row.names = F, sep = " ",
                                 quote = FALSE)
                   }
@@ -1627,10 +1640,10 @@ for(i in seq_along(species_list)){
                 } else {
                   if(substr(species_list[i],32,35) == 2050){
                     for(x in seq_along(2046:2050)+35){
-                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                   col.names = T, row.names = F, sep = " ",
                                   quote = FALSE)
-                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                   col.names = T, row.names = F, sep = " ",
                                   quote = FALSE)
                     }
@@ -1640,10 +1653,10 @@ for(i in seq_along(species_list)){
                   } else {
                     if(substr(species_list[i],32,35) == 2055){
                       for(x in seq_along(2051:2055)+40){
-                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                     col.names = T, row.names = F, sep = " ",
                                     quote = FALSE)
-                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                     col.names = T, row.names = F, sep = " ",
                                     quote = FALSE)
                       }
@@ -1653,10 +1666,10 @@ for(i in seq_along(species_list)){
                     } else {
                       if(substr(species_list[i],32,35) == 2060){
                         for(x in seq_along(2056:2060)+45){
-                          write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                          write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                       col.names = T, row.names = F, sep = " ",
                                       quote = FALSE)
-                          write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                          write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                       col.names = T, row.names = F, sep = " ",
                                       quote = FALSE)
                         }
@@ -1666,10 +1679,10 @@ for(i in seq_along(species_list)){
                       } else {
                         if(substr(species_list[i],32,35) == 2065){
                           for(x in seq_along(2061:2065)+50){
-                            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                         col.names = T, row.names = F, sep = " ",
                                         quote = FALSE)
-                            write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                            write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                         col.names = T, row.names = F, sep = " ",
                                         quote = FALSE)
                           }
@@ -1679,10 +1692,10 @@ for(i in seq_along(species_list)){
                         } else {
                           if(substr(species_list[i],32,35) == 2070){
                             for(x in seq_along(2066:2070)+55){
-                              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                           col.names = T, row.names = F, sep = " ",
                                           quote = FALSE)
-                              write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                              write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                           col.names = T, row.names = F, sep = " ",
                                           quote = FALSE)
                             }
@@ -1692,10 +1705,10 @@ for(i in seq_along(species_list)){
                           } else {
                             if(substr(species_list[i],32,35) == 2075){
                               for(x in seq_along(2071:2075)+60){
-                                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                             col.names = T, row.names = F, sep = " ",
                                             quote = FALSE)
-                                write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                             col.names = T, row.names = F, sep = " ",
                                             quote = FALSE)
                               }
@@ -1705,10 +1718,10 @@ for(i in seq_along(species_list)){
                             } else {
                               if(substr(species_list[i],32,35) == 2080){
                                 for(x in seq_along(2076:2080)+65){
-                                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                               col.names = T, row.names = F, sep = " ",
                                               quote = FALSE)
-                                  write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                  write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                               col.names = T, row.names = F, sep = " ",
                                               quote = FALSE)
                                 }
@@ -1718,10 +1731,10 @@ for(i in seq_along(species_list)){
                               } else {
                                 if(substr(species_list[i],32,35) == 2085){
                                   for(x in seq_along(2081:2085)+70){
-                                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                                 col.names = T, row.names = F, sep = " ",
                                                 quote = FALSE)
-                                    write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                    write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                 col.names = T, row.names = F, sep = " ",
                                                 quote = FALSE)
                                   }
@@ -1731,10 +1744,10 @@ for(i in seq_along(species_list)){
                                 } else {
                                   if(substr(species_list[i],32,35) == 2090){
                                     for(x in seq_along(2086:2090)+75){
-                                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                                   col.names = T, row.names = F, sep = " ",
                                                   quote = FALSE)
-                                      write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                      write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                   col.names = T, row.names = F, sep = " ",
                                                   quote = FALSE)
                                     }
@@ -1744,10 +1757,10 @@ for(i in seq_along(species_list)){
                                   } else {
                                     if(substr(species_list[i],32,35) == 2095){
                                       for(x in seq_along(2091:2095)+80){
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
                                       }
@@ -1756,10 +1769,10 @@ for(i in seq_along(species_list)){
                                       rm(x)
                                     } else {
                                       for(x in seq_along(2096:2100)+85){
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
-                                        write.table(a,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
+                                        write.table(a/100,paste0("outputs/",substr(species_list[i],37,nchar(species_list[i])-4),"/SSP5 - climate + land use/environment/suitability/HS_",x,".csv"),
                                                     col.names = T, row.names = F, sep = " ",
                                                     quote = FALSE)
                                       }
