@@ -503,8 +503,9 @@ bio01_1981_2010 <- rast("clim/1981_2010/bio01.tif")
 names(bio01_1981_2010) <- "bio1"
 varnames(bio01_1981_2010) <- "bio01_1981_2010"
 longnames(bio01_1981_2010) <- "bio01_1981_2010"
+rm(bio01_1981_2010,bio12_1981_2010)
 
-##croping and exporting 
+###### croping and exporting ####
 
 # load package
 library("terra")
@@ -537,6 +538,9 @@ BavBW <- mask(BavBW,tShape)
 a <- varnames(EVs)
 names(BavBW) <- a
 
+# aggregate data
+xBavBW <- aggregate(BavBW, fact = 6, fun = "mean", na.rm = T)
+
 # create dummy raster
 s <- rast(nrow = 66,
           ncol = 127,
@@ -547,10 +551,10 @@ s <- rast(nrow = 66,
 crs(s)<- "epsg:4326"
 
 # resampling to match the 
-nBavBW <- resample(BavBW, s, method = "average")
+nBavBW <- resample(xBavBW, s, method = "bilinear")
 
 # remove unnecessary objects
-rm(s)
+rm(xBavBW,s)
 invisible(gc())
 
 # structuring
