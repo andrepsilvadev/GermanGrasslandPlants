@@ -1,2 +1,11 @@
-Full data for model runs are available in the link below  
-[https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing](https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing)
+Task 1.1 Data collection
+
+Methods_Task1.1_data collection.nb.html: description of methods used in Task 1.1 data collection
+
+Code:
+-> in "src" - Task1.4_-_Climate_and_land-use_scenarios.R: Code to be run
+-> in "reports" - Task1.4_-_Climate_and_land-use_scenarios.Rmd: RMarkdown report
+-> in "reports" - Task1.4_-_Climate_and_land-use_scenarios.html: RMarkdown report in html
+
+Data:
+Data to run the models in [https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing](https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing)
