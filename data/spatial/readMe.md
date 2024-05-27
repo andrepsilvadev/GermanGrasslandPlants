@@ -4,9 +4,9 @@ Task1.4_-_Climate_and_land-use_scenarios.html: description of methods used in Ta
 
 ## Code:
 
-> in "src" - Task1.4_-_Climate_and_land-use_scenarios.R: Code to be run
-> in "reports" - Task1.4_-_Climate_and_land-use_scenarios.Rmd: RMarkdown report
-> in "reports" - Task1.4_-_Climate_and_land-use_scenarios.html: RMarkdown report in html
++ in "src" - Task1.4_-_Climate_and_land-use_scenarios.R: Code to be run
++ in "reports" - Task1.4_-_Climate_and_land-use_scenarios.Rmd: RMarkdown report
++ in "reports" - Task1.4_-_Climate_and_land-use_scenarios.html: RMarkdown report in html
 
 ## Data:
 
