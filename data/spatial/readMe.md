@@ -1,6 +1,6 @@
 # Task 1.4 - Climate and land-use scenarios
 
-Task1.4_-_Climate_and_land-use_scenarios.html: description of methods used in Task 1.4 - Climate and land-use scenarios
+Task1.4_-_Climate_and_land-use_scenarios.html: description of methods used in `Task 1.4 - Climate and land-use scenarios`.
 
 ## Code:
 
