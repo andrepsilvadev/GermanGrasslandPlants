@@ -10,4 +10,4 @@ Task1.4_-_Climate_and_land-use_scenarios.html: description of methods used in `T
 
 ## Data:
 
-Data to run the models in [https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing](https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing)
+Output data to run the models in [https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing](https://drive.google.com/file/d/1pbE11weqDgNG24Xx2No7ulXFUNIMKlOC/view?usp=sharing)
