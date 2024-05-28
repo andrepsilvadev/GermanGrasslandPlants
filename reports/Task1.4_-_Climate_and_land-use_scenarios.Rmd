@@ -12,6 +12,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<style>
+body {
+text-align: justify}
+</style>
+
 # METHODS
 
 This step is divided into three substeps: (1) downloading and processing the climate variables; (2) downloading and processing land use variables; and (3) combine climate scenarios and land use scenarios. 
@@ -316,7 +321,7 @@ rm(end,start)
 
 ### 1.3	– Clipping and Exporting the Climate Data
 
-In addition to the species files (input ecophysiological data of the target species), for the model to run, it is also necessary to export the layers of climate variables for the desired intervals and climate scenarios (2011-2040, 2041-2070, 2071-2100; SSP126 and SSP585; respectively) clipped so that only the Bavaria and Baden-Württemberg area are included. For this purpose, the package ```terra``` ([Hijmans, 2024](#terra)) and the package ```sf``` ([Pebesma, 2018](#sf)) were used.
+In addition to the species files (input ecophysiological data of the target species), for the model to run, it is also necessary to export the layers of climate variables for the desired intervals and climate scenarios (2011-2040, 2041-2070, 2071-2100; SSP126 and SSP585; respectively) clipped so that only the Bavaria and Baden-Württemberg area are included. For this purpose, the package ```terra``` ([Hijmans, 2024](#terra)) and the package ```sf``` ([Pebesma, 2018](#sf)) were used. Before being exported, the climate rasters were aggregated by a factor 6 and then resampled to match the resolution of the land-use files, this is done using the package ```terra``` ([Hijmans, 2024](#terra)).
 
 ```{r, include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, eval = FALSE}
 start1 <- Sys.time()
@@ -675,7 +680,7 @@ rm(end1,start1)
 
 ## 2 – LAND USE
 
-The land use data is available in 5-year timesteps from 2015 to 2100 with a resolution of 1km for fifteen climate scenarios and the same five GCMs available for climate data. In this work, the SSP 1 – RCP 2.6 and SSP 5 – RCP 8.5 scenarios and the average of the GCMs are used. All the land use layers are available in [Chen et al. (2020)](#chen).
+The land use data is available in 5-year timesteps from 2015 to 2100 with a resolution of approximately 5km for fifteen climate scenarios and the same five GCMs available for climate data. In this work, the SSP 1 – RCP 2.6 and SSP 5 – RCP 8.5 scenarios and the average of the GCMs are used. All the land use layers are available in [Chen et al. (2020)](#chen).
 The land use data were used to calculate the habitat suitability of each species, according to the following scheme ([Figure 2](#fig2); see [section 2.3](#S23)). The land use data was extracted and processed using the package ```terra``` ([Hijmans, 2024](#terra)), the package ```sf``` ([Pebesma, 2018](#sf)), the package ```ncdf4``` ([Pierce, 2023](#nc)), the package ```raster``` ([Hijmans, 2023](#raster)), and the package ```rgdal``` ([Bivand et al., 2023](#rgdal)) in the R software ([R Core Team, 2022](#r)).
 
 ### 2.1 – Selection of the Year for Extracting Land use Data
