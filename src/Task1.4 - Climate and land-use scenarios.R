@@ -5,7 +5,7 @@
 start_f <- Sys.time()
 
 # create vector with directory path
-wd <- "path"
+wd <- "../../MetaRange/data/spatial"
 
 # set working directory
 setwd(wd)
