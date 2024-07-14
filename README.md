@@ -2,7 +2,8 @@
 
 Folder structure:
 
-data - This directory contains the raw data used for the project.
+data - This directory contains the raw data used for the code. Complete inputs, spatial data and output files can be found at
+https://bham-my.sharepoint.com/personal/j_sarmentocabral_bham_ac_uk/Documents/BLIZ%20TP%20II%20Blechschmidt%20MS%20II/MetaRange?csf=1&web=1&e=jmoohq
 
 input - This directory holds any intermediate files or data transformations that are generated during the analysis process. 
 
