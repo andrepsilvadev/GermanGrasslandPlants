@@ -8,7 +8,8 @@ Code:
 -> in "reports" - BLIZ_Task1.1_data collection.html: RMarkdown report in html
 
 Data:
--> Data files in https://drive.google.com/drive/folders/1x93UjAnduPXwROqXVnQeJ4JQbdVoKeom?usp=sharing
+-> Data files in https://drive.google.com/drive/folders/1x93UjAnduPXwROqXVnQeJ4JQbdVoKeom?usp=sharing. Replace in July 14th, 2022 to 
+https://bham-my.sharepoint.com/personal/j_sarmentocabral_bham_ac_uk/Documents/BLIZ%20TP%20II%20Blechschmidt%20MS%20II/MetaRange?csf=1&web=1&e=jmoohq
 
 Results:
 -> Occurrences_bav&bw: table with number of occurrences of selected species in Bavaria and Baden-Württemberg
