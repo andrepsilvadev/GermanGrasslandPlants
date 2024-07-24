@@ -484,3 +484,9 @@ sp_corr_plots_two <- ggplot(corr_data_two, aes(x = habitat_change, y = abund_cha
 sp_corr_plots_two
 
 gc()
+
+########################
+# SENSITIVITY ANALYSIS #
+########################
+
+
