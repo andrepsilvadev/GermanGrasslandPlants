@@ -1,7 +1,10 @@
 # BLIZ ##
 ## Task 1.6 ##
-# NEW TEST RUN WITH DATA FROM 12th JULY 2024
-# control run was only added on the 17th of July
+
+# This script uses data for "normal" analysis from the 12th July 2024
+# The control run was only added on the 17th July 2024
+# It also has the code for sensitivity analysis using data from the 24th July 2024
+# The sensitivity analysis ran only on the wuerzburg server for ONLY ONE SCENARIO
 
 # Packages
 library(readr)
@@ -33,12 +36,12 @@ setwd("C:/Users/User/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE/
   #fread(path) %>% #import the files  
   #mutate(folder = foldername) # add a new collumn with the folder name
 #})
- gc()
+#gc()
 
 #all_data <- all_data %>%
  # separate(folder, c("date", "time", "species", "scenario"), sep = "_", remove = FALSE) %>% #takes a VERY long time ^(more than 40 minutes)
   #dplyr::select(-c("folder", "date", "time"))
-gc()
+#gc()
 
 #check for negative values in abundance
 #summary(all_data)
@@ -54,6 +57,7 @@ gc()
 #write tsv file with all species in all scenarios
 #write_tsv(all_data, "full_dataset.tsv")
 
+#Import the complete dataset 
 all_data <- fread("./full_dataset.tsv", integer64 = "numeric")
 gc()
 
@@ -192,7 +196,6 @@ ggsave(plot = abund_plot, file = "./plots_22Jul/1.Abundance_through_time19Jul.ti
 
 
 ### OPTION WITH SAME SCALE IN ALL AXIS ###
-
 abund_plot2 <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario, color = scenario)) + 
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = abundance_mean - abundance_sd, ymax = abundance_mean + abundance_sd, fill = scenario), alpha = 0.3, colour = NA) + # add ribbon with standard deviation values
@@ -238,7 +241,6 @@ reprod_plot <- ggplot(mean_stDEV, aes(x = t, y = reproduction_mean, group = scen
 ggsave(plot = reprod_plot, file = "./plots_22Jul/2.Reproduction_through_time19Jul.tiff",  bg = 'white', width = 250, height = 230, units = "mm", dpi = 1200, compression = "lzw")
 
 ### OPTION WITH SAME SCALE IN ALL AXIS ###
-
 reprod_plot2 <- ggplot(mean_stDEV, aes(x = t, y = reproduction_mean, group = scenario, color = scenario)) +
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = reproduction_mean - reproduction_sd, ymax = reproduction_mean + reproduction_sd, fill = scenario), alpha = 0.3, color =NA) + # add ribbon with standard deviation values
@@ -287,7 +289,6 @@ ggsave(plot = habitat_plot, file = "./plots_22Jul/3.Habitat_suitability_through_
 
 
 ### OPTION WITH SAME SCALE IN ALL AXIS ###
-
 habitat_plot2 <- ggplot(mean_stDEV, aes(x = t, y = habitat_mean, group = scenario, color = scenario)) +
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = habitat_mean - habitat_sd, ymax = habitat_mean + habitat_sd, fill = scenario), alpha = 0.3, color = NA) + # add ribbon with standard deviation values
@@ -335,7 +336,6 @@ carry_cap_plot <- ggplot(mean_stDEV, aes(x = t, y = carry_mean, group = scenario
 ggsave(plot = carry_cap_plot, file = "./plots_22Jul/4.Carrying_capacity_through_time19Jul.tiff",  bg = 'white', width = 250, height = 230, units = "mm", dpi = 1200, compression = "lzw")
 
 ### OPTION WITH SAME SCALE IN ALL AXIS ###
-
 carry_cap_plot2 <- ggplot(mean_stDEV, aes(x = t, y = carry_mean, group = scenario, color = scenario)) +
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = carry_mean - carry_sd, ymax = carry_mean + carry_sd, fill = scenario), alpha = 0.3, color = NA) +  # add ribbon with standard deviation values
@@ -383,7 +383,6 @@ mort_plot <- ggplot(mean_stDEV, aes(x = t, y = bevmort_mean, group = scenario, c
 ggsave(plot = mort_plot, file = "./plots_22Jul/5.Mortality_through_time_19Jul.tiff",  bg = 'white', width = 250, height = 230, units = "mm", dpi = 1200, compression = "lzw")
 
 ### OPTION WITH SAME SCALE IN ALL AXIS ###
-
 mort_plot2 <- ggplot(mean_stDEV, aes(x = t, y = bevmort_mean, group = scenario, color = scenario)) +
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = bevmort_mean - bevmort_sd, ymax = bevmort_mean + bevmort_sd, fill = scenario), alpha = 0.3, color = NA) + # add ribbon with standard deviation values
@@ -444,7 +443,7 @@ ggsave(plot = abund_mismatch_plot2, file = "./plots_22Jul/6.3Abundance_mismatch2
 
 gc()
 
-
+## OPTION USING VIOLOIN PLOTS ##
 ## ABUNDANCE MISMATCH WITH VIOLOIN PLOTS
 abund_mismatch_violin <- ggplot(all_data, aes(x = as.factor(scenario), y = abund_mismatch, fill = scenario)) +
   geom_violin() +
@@ -473,7 +472,7 @@ abundance_change_map <- abund_t90 %>%
       geom_raster() +
       facet_wrap(.~species) + 
       #guides(fill = guide_colourbar(title.position = "bottom")) +
-      scale_fill_distiller(palette = "RdBu", na.value = "transparent") + 
+      scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
       #scale_fill_viridis_c("Abundance \nchange", option = "H", na.value = "transparent") +
       labs(x = "Cell longitude ", y ="Cell latitude ") +
         theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
@@ -499,7 +498,7 @@ habitat_change_map <- abund_t90 %>%
       geom_raster() +
       facet_wrap(.~species) + 
       #guides(fill = guide_colourbar(title.position = "bottom")) +
-      scale_fill_distiller(palette = "RdBu", na.value = "transparent", name = "Habitat suitability \nchange") + 
+      scale_fill_distiller(palette = "RdBu", na.value = "transparent", name = "Habitat suitability \nchange", direction = -1) + 
       labs(x = "Cell longitude ", y ="Cell latitude ") +
       theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
             # facets identification customization
@@ -664,4 +663,76 @@ gc()
 ########################
 # SENSITIVITY ANALYSIS #
 ########################
+
+
+
+main_folder <- "C:/Users/User/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE/sensitivity"
+
+# Get the list of all subfolders
+subfolders <- list.dirs(main_folder, full.names = TRUE, recursive = FALSE)
+
+# Initialize lists to store data frames
+data_105 <- list()
+data_95 <- list()
+data_other <- list()
+
+# Loop through each subfolder
+for (subfolder in subfolders) {
+  # Get the name of the subfolder
+  folder_name <- basename(subfolder)
+  
+  # Path to the TSV file (assuming there's only one TSV file per folder)
+  tsv_file <- list.files(subfolder, pattern = "\\.tsv$", full.names = TRUE)
+  
+  if (length(tsv_file) == 1) {
+    # Read the TSV file
+    data <- read.delim(tsv_file, header = TRUE, sep = "\t")
+    
+    # Add a new column with the folder name
+    data$source_folder <- folder_name
+    
+    # Separate the data based on folder name containing "105" or "95"
+    if (grepl("105", folder_name)) {
+      data_105[[folder_name]] <- data
+    } else if (grepl("95", folder_name)) {
+      data_95[[folder_name]] <- data
+    } else {
+      data_other[[folder_name]] <- data
+    }
+  }
+}
+
+combined_data_105 <- data.table::rbindlist(data_105)
+combined_data_095 <- data.table::rbindlist(data_95)
+datacontrol <- data_other[grep("control", names(data_other))]
+combined_data_control <- data.table::rbindlist(datacontrol)
+
+combined_data_105 <- combined_data_105 %>%
+  separate(source_folder, c("date", "time", "species", "scenario", "word", "SR", "VAR_CHANGED"), sep = "_", remove = FALSE) %>% #takes a VERY long time ^(more than 40 minutes)
+  dplyr::select(-c("source_folder", "date", "time"))
+
+
+
+all_data <- list.files(recursive = T) %>% #get a list of the paths to datasets files
+  map_dfr(function(path) {
+#retrieve any characters from the beginning of the path until /
+    foldername <- str_extract(path, "^.+(?=/)")
+    fread(path) %>% #import the files  
+    mutate(folder = foldername) # add a new collumn with the folder name
+})
+
+setwd("working_directory_das_sentitivty_analysis")
+
+files <- list.files(path = ".", pattern = "\\.tsv", full.names = TRUE, recursive = TRUE)
+change_105 <- grepl("105", basename(files))
+change_95 <- grepl("095", basename(files))
+
+
+gc()
+
+all_data <- all_data %>%
+  separate(folder, c("date", "time", "species", "scenario"), sep = "_", remove = FALSE) %>% #takes a VERY long time ^(more than 40 minutes)
+  dplyr::select(-c("folder", "date", "time"))
+
+gc()
 
