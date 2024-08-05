@@ -465,6 +465,13 @@ ggsave(plot = abund_mismatch_violin, file = "Abundance_mismatch_violin19Jul.tiff
 # subset data for the last time step (t = 90)
 abund_t90<-all_data[all_data$t == 90,]
 
+#RERUN THIS TO CHECK THE CODE
+
+# Loop through each scenario
+for (scenario in scenarios) {
+  # Filter data for the current scenario
+  abund_scenario <- abund_t90[abund_t90$scenario == scenario,]
+
 #new way of having the spatial maps to have a different fill scale for each species
 abundance_change_map <- abund_t90 %>%
   group_by(species) %>% 
@@ -486,6 +493,10 @@ abundance_change_map <- abund_t90 %>%
             axis.title = element_text(face = "bold"))}) %>% 
   .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
   grid.arrange()
+
+#save each scenario map as a separate image
+ggsave(paste0("abundance_change_map_scenario_", scenario, ".png"), abundance_change_map)
+}
 
 #Save abundance mismatch per scenario plot
 ggsave(plot = abundance_change_map, file = "./1.plots_22Jul/7.abundance_change_map.tiff",  bg = 'white', width = 230, height = 280, units = "mm", dpi = 1200, compression = "lzw")
