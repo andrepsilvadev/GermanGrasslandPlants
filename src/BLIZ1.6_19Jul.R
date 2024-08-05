@@ -521,7 +521,7 @@ habitat_change_map <- abund_t90 %>%
             axis.title = element_text(face = "bold"))}) %>% 
   .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
   grid.arrange()
-
+#
 #Save habitat suitability per scenario plot
 ggsave(plot = habitat_change_map, file = "./1.plots_22Jul/8.habitat_change_map.tiff",  bg = 'white', width = 230, height = 280, units = "mm", dpi = 1200, compression = "lzw")
 
