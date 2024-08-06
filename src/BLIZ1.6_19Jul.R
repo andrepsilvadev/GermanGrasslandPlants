@@ -461,6 +461,7 @@ ggsave(plot = abund_mismatch_violin, file = "Abundance_mismatch_violin19Jul.tiff
 ##################################################
 # STEP 4 - CREATE CELL LEVEL PLOTS (per species) #
 ##################################################
+#
 
 # subset data for the last time step (t = 90)
 abund_t90<-all_data[all_data$t == 90,]
