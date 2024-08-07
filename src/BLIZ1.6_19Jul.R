@@ -22,6 +22,7 @@ library(stringr)
 library(data.table)
 library(gridExtra) #for spatial maps to have different fill scales
 library(bit64) #for the integer64 columns
+library(RColorBrewer) # palletes for the maps on step 4
 
 ##############################################
 # STEP 1 - IMPORT AND MERGE ALL OUTPUT FILES #
@@ -71,7 +72,7 @@ all_data <- all_data %>%
 gc()
 
 #abundance change
-all_data <- all_data%>%
+all_data <- all_data %>%
   group_by(species, scenario) %>% 
   mutate(abund_change <- abundance - abundance[t == 25]) %>%
   ungroup()
@@ -461,12 +462,28 @@ ggsave(plot = abund_mismatch_violin, file = "Abundance_mismatch_violin19Jul.tiff
 ##################################################
 # STEP 4 - CREATE CELL LEVEL PLOTS (per species) #
 ##################################################
-#
+#abundance change proportion
+all_data <- all_data %>%
+  group_by(species, scenario) %>% 
+  mutate(abund_change_prop <- (abundance - abundance[t == 25])/abundance[t == 25]) %>%
+  rename(abund_change_prop = 16)  %>% 
+  ungroup()
+gc()
 
 # subset data for the last time step (t = 90)
 abund_t90<-all_data[all_data$t == 90,]
+abund_t90$abund_change <- as.numeric(abund_t90$abund_change) # the plot scale does not work if the abund_chnage is in integer64 format
+
 
 #RERUN THIS TO CHECK THE CODE
+scenarios <- unique(abund_t90$scenario)
+
+# Define the RdBu palette with a midpoint at 0
+palette <- brewer.pal(11, "RdBu")
+
+####################################
+####### ABUNDANCE CHNAGE MAP ####### 
+
 
 # Loop through each scenario
 for (scenario in scenarios) {
@@ -474,16 +491,45 @@ for (scenario in scenarios) {
   abund_scenario <- abund_t90[abund_t90$scenario == scenario,]
 
 #new way of having the spatial maps to have a different fill scale for each species
-abundance_change_map <- abund_t90 %>%
+abundance_change_map <- ggplot() +
+  geom_raster(data = abund_scenario, aes(x = x, y = -y, fill = abund_change)) +
+  facet_wrap(species ~ . ) + # vertical panels for each species in 3 columns
+  scale_fill_gradientn(colors = palette, na.value = "transparent",
+                       limits = c(min(abund_scenario$abund_change, na.rm = TRUE), 
+                                  max(abund_scenario$abund_change, na.rm = TRUE)),
+                       values = scales::rescale(c(min(abund_scenario$abund_change, na.rm = TRUE), 0, 
+                                                  max(abund_scenario$abund_change, na.rm = TRUE)))) +
+  labs(x = "Cell longitude", y = "Cell latitude", fill = "Abundance change") +
+  theme(legend.position = c(0.9,0.1), panel.background =  element_blank(), # no background grids
+        # facets identification customization
+        strip.background =  element_rect(fill = "grey94", color = "black"), 
+        strip.text = element_text(face = "italic", size = rel(0.8)), 
+        panel.border =element_rect(color = "black", fill = NA),
+        # axis and legend font type
+        legend.title = element_text(face = "bold"),
+        legend.text=element_text(size = 6),
+        axis.title = element_text(face = "bold")) 
+
+#save each scenario map as a separate image
+ggsave(paste0("abundance_change_map_scenario_", scenario, ".tiff"), abundance_change_map, bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
+} 
+
+#old code 
+abund_t90 %>%
   group_by(species) %>% 
   do(gg = {ggplot(., aes(x, -y, fill = abund_change)) + 
       geom_raster() +
       facet_wrap(.~species) + 
       #guides(fill = guide_colourbar(title.position = "bottom")) +
-      scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
+      #scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
+      scale_fill_gradientn(colors = palette, na.value = "transparent",
+                           limits = c(min(abund_scenario$abund_change, na.rm = TRUE), 
+                                      max(abund_scenario$abund_change, na.rm = TRUE)),
+                           values = scales::rescale(c(min(abund_scenario$abund_change, na.rm = TRUE), 0, 
+                                                      max(abund_scenario$abund_change, na.rm = TRUE)))) +
       #scale_fill_viridis_c("Abundance \nchange", option = "H", na.value = "transparent") +
-      labs(x = "Cell longitude ", y ="Cell latitude ") +
-        theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
+      labs(x = "Cell longitude", y ="Cell latitude", fill = "Abundance change") +
+      theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
             # facets identification customization
             strip.background =  element_rect(fill = "grey94", color = "black"), 
             strip.text = element_text(face = "italic", size = rel(0.8)), 
@@ -495,12 +541,70 @@ abundance_change_map <- abund_t90 %>%
   .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
   grid.arrange()
 
-#save each scenario map as a separate image
-ggsave(paste0("abundance_change_map_scenario_", scenario, ".png"), abundance_change_map)
-}
+######################################
+###### ABUNDANCE CHNAGE PROP MAP #####
 
-#Save abundance mismatch per scenario plot
-ggsave(plot = abundance_change_map, file = "./1.plots_22Jul/7.abundance_change_map.tiff",  bg = 'white', width = 230, height = 280, units = "mm", dpi = 1200, compression = "lzw")
+
+# Loop through each scenario
+for (scenario in scenarios) {
+  # Filter data for the current scenario
+  abund_scenario <- abund_t90[abund_t90$scenario == scenario,]
+  
+  #new way of having the spatial maps to have a different fill scale for each species
+  abundance_change_prop_map <- ggplot() +
+    geom_raster(data = abund_scenario, aes(x = x, y = -y, fill = abund_change_prop)) +
+    facet_wrap(species ~ . ) + # vertical panels for each species in 3 columns
+    scale_fill_gradientn(colors = palette, na.value = "transparent",
+                         limits = c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 
+                                    max(abund_scenario$abund_change_prop, na.rm = TRUE)),
+                         values = scales::rescale(c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 0, 
+                                                    max(abund_scenario$abund_change_prop, na.rm = TRUE)))) +
+    labs(x = "Cell longitude", y = "Cell latitude", fill = "Abundance change \nproportion") +
+    theme(legend.position = c(0.9,0.1), panel.background =  element_blank(), # no background grids
+          # facets identification customization
+          strip.background =  element_rect(fill = "grey94", color = "black"), 
+          strip.text = element_text(face = "italic", size = rel(0.8)), 
+          panel.border =element_rect(color = "black", fill = NA),
+          # axis and legend font type
+          legend.title = element_text(face = "bold"),
+          legend.text=element_text(size = 6),
+          axis.title = element_text(face = "bold")) 
+  
+  #save each scenario map as a separate image
+  ggsave(paste0("abundance_change_prop_map_scenario_", scenario, ".tiff"), abundance_change_prop_map, bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
+} 
+
+#old code where each plot has a separate color scale and bar
+    abundance_change_prop_map <- abund_t90 %>%
+    group_by(species) %>% 
+    do(gg = {ggplot(., aes(x, -y, fill = abund_change_prop)) + 
+        geom_raster() +
+        facet_wrap(.~species) + 
+        #guides(fill = guide_colourbar(title.position = "bottom")) +
+        #scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
+        scale_fill_gradientn(colors = palette, na.value = "transparent",
+                             limits = c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 
+                                        max(abund_scenario$abund_change_prop, na.rm = TRUE)),
+                             values = scales::rescale(c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 0, 
+                                                        max(abund_scenario$abund_change_prop, na.rm = TRUE)))) +
+        #scale_fill_viridis_c("Abundance \nchange", option = "H", na.value = "transparent") +
+        labs(x = "Cell longitude ", y ="Cell latitude ") +
+        theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
+              # facets identification customization
+              strip.background =  element_rect(fill = "grey94", color = "black"), 
+              strip.text = element_text(face = "italic", size = rel(0.8)), 
+              panel.border =element_rect(color = "black", fill = NA),
+              # axis and legend font type
+              legend.title = element_text(face = "bold"),
+              legend.text=element_text(size = 6),
+              axis.title = element_text(face = "bold"))}) %>% 
+    .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
+    grid.arrange()
+  
+  #save each scenario map as a separate image
+  ggsave(paste0("abundance_change_prop_map_scenario_", scenario, ".tiff"), abundance_change_prop_map, bg = 'white', width = 230, height = 250, units = "mm", dpi = 1200, compression = "lzw")
+} 
+
 
 
 ## HABITAT SUITABILITY CHANGE SPATIAL MAP ##
