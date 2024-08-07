@@ -166,7 +166,7 @@ line_plots_theme <- theme_minimal() +
     axis.text.x=element_text(colour="black", margin=margin(t=1,r=0,b=0,l=0), size = 9))
 
 #set the working directory again to save plots in tha correct folder
-setwd("C:/Users/User/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE/19Jul")
+setwd("C:/Users/User/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE/06Aug")
 
 ## ABUNDANCE THROUGH TIME
 
@@ -475,7 +475,7 @@ abund_t90<-all_data[all_data$t == 90,]
 abund_t90$abund_change <- as.numeric(abund_t90$abund_change) # the plot scale does not work if the abund_chnage is in integer64 format
 
 
-#RERUN THIS TO CHECK THE CODE
+#get the names of each scenario
 scenarios <- unique(abund_t90$scenario)
 
 # Define the RdBu palette with a midpoint at 0
@@ -514,32 +514,6 @@ abundance_change_map <- ggplot() +
 ggsave(paste0("abundance_change_map_scenario_", scenario, ".tiff"), abundance_change_map, bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
 } 
 
-#old code 
-abund_t90 %>%
-  group_by(species) %>% 
-  do(gg = {ggplot(., aes(x, -y, fill = abund_change)) + 
-      geom_raster() +
-      facet_wrap(.~species) + 
-      #guides(fill = guide_colourbar(title.position = "bottom")) +
-      #scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
-      scale_fill_gradientn(colors = palette, na.value = "transparent",
-                           limits = c(min(abund_scenario$abund_change, na.rm = TRUE), 
-                                      max(abund_scenario$abund_change, na.rm = TRUE)),
-                           values = scales::rescale(c(min(abund_scenario$abund_change, na.rm = TRUE), 0, 
-                                                      max(abund_scenario$abund_change, na.rm = TRUE)))) +
-      #scale_fill_viridis_c("Abundance \nchange", option = "H", na.value = "transparent") +
-      labs(x = "Cell longitude", y ="Cell latitude", fill = "Abundance change") +
-      theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
-            # facets identification customization
-            strip.background =  element_rect(fill = "grey94", color = "black"), 
-            strip.text = element_text(face = "italic", size = rel(0.8)), 
-            panel.border =element_rect(color = "black", fill = NA),
-            # axis and legend font type
-            legend.title = element_text(face = "bold"),
-            legend.text=element_text(size = 6),
-            axis.title = element_text(face = "bold"))}) %>% 
-  .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
-  grid.arrange()
 
 ######################################
 ###### ABUNDANCE CHNAGE PROP MAP #####
@@ -574,37 +548,35 @@ for (scenario in scenarios) {
   ggsave(paste0("abundance_change_prop_map_scenario_", scenario, ".tiff"), abundance_change_prop_map, bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
 } 
 
-#old code where each plot has a separate color scale and bar
-    abundance_change_prop_map <- abund_t90 %>%
-    group_by(species) %>% 
-    do(gg = {ggplot(., aes(x, -y, fill = abund_change_prop)) + 
-        geom_raster() +
-        facet_wrap(.~species) + 
-        #guides(fill = guide_colourbar(title.position = "bottom")) +
-        #scale_fill_distiller(palette = "RdBu", na.value = "transparent", direction = -1) + 
-        scale_fill_gradientn(colors = palette, na.value = "transparent",
-                             limits = c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 
-                                        max(abund_scenario$abund_change_prop, na.rm = TRUE)),
-                             values = scales::rescale(c(min(abund_scenario$abund_change_prop, na.rm = TRUE), 0, 
-                                                        max(abund_scenario$abund_change_prop, na.rm = TRUE)))) +
-        #scale_fill_viridis_c("Abundance \nchange", option = "H", na.value = "transparent") +
-        labs(x = "Cell longitude ", y ="Cell latitude ") +
-        theme(legend.position = "bottom", panel.background =  element_blank(), # no background grids
-              # facets identification customization
-              strip.background =  element_rect(fill = "grey94", color = "black"), 
-              strip.text = element_text(face = "italic", size = rel(0.8)), 
-              panel.border =element_rect(color = "black", fill = NA),
-              # axis and legend font type
-              legend.title = element_text(face = "bold"),
-              legend.text=element_text(size = 6),
-              axis.title = element_text(face = "bold"))}) %>% 
-    .$gg %>% arrangeGrob(grobs = ., nrow = 4) %>%
-    grid.arrange()
-  
-  #save each scenario map as a separate image
-  ggsave(paste0("abundance_change_prop_map_scenario_", scenario, ".tiff"), abundance_change_prop_map, bg = 'white', width = 230, height = 250, units = "mm", dpi = 1200, compression = "lzw")
-} 
 
+################################################
+## NEW PLOT - SPATIAL HOTSPOTS OF CHANGE MAPS ##
+################################################
+
+new_data <- abund_t90 %>% 
+  group_by(scenario, x, y) %>%
+  summarise_at(vars(abund_change_prop), list(mean_proportion_of_change_across_species = mean))
+  
+
+spatial_hotspots_map <- ggplot() +
+  geom_raster(data = new_data, aes(x = x, y = -y, fill = mean_proportion_of_change_across_species)) +
+  facet_wrap(scenario ~ . ) + # vertical panels for each species in 3 columns
+  scale_fill_gradientn(colors = palette, na.value = "transparent",
+                       limits = c(min(new_data$mean_proportion_of_change_across_species, na.rm = TRUE), 
+                                  max(new_data$mean_proportion_of_change_across_species, na.rm = TRUE)),
+                       values = scales::rescale(c(min(new_data$mean_proportion_of_change_across_species, na.rm = TRUE), 0, 
+                                                  max(new_data$mean_proportion_of_change_across_species, na.rm = TRUE)))) +
+  labs(x = "Cell longitude ", y ="Cell latitude", fill = "MPCAS") +
+  theme(legend.position = c(0.9,0.1), panel.background =  element_blank(), # no background grids
+        # facets identification customization
+        strip.background =  element_rect(fill = "grey94", color = "black"), 
+        strip.text = element_text(face = "italic", size = rel(0.8)), 
+        panel.border =element_rect(color = "black", fill = NA),
+        # axis and legend font type
+        legend.title = element_text(face = "bold"),
+        legend.text=element_text(size = 6),
+        axis.title = element_text(face = "bold"))
+ggsave(plot = spatial_hotspots_map, file = "spatial_hotspots_map.tiff",  bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
 
 
 ## HABITAT SUITABILITY CHANGE SPATIAL MAP ##
@@ -750,29 +722,9 @@ facet_wrap(species ~ ., ncol = 3, scales = "free_y") + # one pannel for each spe
 
 ggsave(plot = aa, file = "correlation_plots_scenarios_test19Jul.tiff",  bg = 'white', width = 210, height = 270, units = "mm", dpi = 1200, compression = "lzw")
 
-#############################################
 
-#sp_corr_plots_scenario <- ggplot(corr_data_scenarios, aes(x = habitat_change, y = abund_change, color = scenario, shape = scenario)) +
-  #geom_point(alpha = 0.3) +
- # facet_wrap(species ~ .,ncol = 3, scales = "free_y") + # one pannel for each species
-#  labs(x = "Habitat suitability change", y = "Abundance change") + # label axis
- # geom_smooth( aes(group = scenario ), method = "loess", span = 0.1, size = 1) +
-  #stat_smooth(method = "lm", formula = y~x) + # plot a linear regression model for each species
-  #geom_text(data = labels, aes(label = formula), x = 0, y = 150000, parse = TRUE, hjust = 0, size = 7/.pt) + # label for the equation
-  #geom_text(x = 0, y = -350000, aes(label = r2), data = labels, parse = TRUE, hjust = 0, size = 7/.pt) + # label for the r2
-  #theme_minimal() + # main theme
-  #theme(panel.background =  element_blank(), # no background colour
-        # background grids customization
-    #    panel.grid.major =  element_blank(), 
-   #     panel.grid.minor = element_line(color = "gray90", size = 0.25),
-        # facets identification customization
-     #   strip.text = element_text(face = "italic", size = rel(0.8)), 
-        # axis and legend font type
-      #  legend.title = element_text(face = "bold"), 
-       # axis.title = element_text(face = "bold"))
 
-#ggsave(plot = sp_corr_plots_scenario, file = "correlation_plots_scenarios_test2_17Jul.tiff",  bg = 'white', width = 210, height = 270, units = "mm", dpi = 1200, compression = "lzw")
-gc()
+
 
 #https://nilsreimer.com/post/gwtp-facets-and-curves/
 
