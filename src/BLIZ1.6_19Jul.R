@@ -191,7 +191,7 @@ abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario
   labs(x ="Time" , y = "Abundance", color = "Scenarios", fill = "Scenarios") +  
   line_plots_theme + 
   theme(legend.position="bottom")
-#abund_plot
+abund_plot
 #save ABUNDANCE THROUGH TIME plot
 ggsave(plot = abund_plot, file = "./plots_22Jul/1.Abundance_through_time19Jul.tiff", bg = 'white', width = 200, height = 180, units = "mm", dpi = 1200, compression = "lzw")
 
@@ -548,7 +548,6 @@ for (scenario in scenarios) {
   ggsave(paste0("abundance_change_prop_map_scenario_", scenario, ".tiff"), abundance_change_prop_map, bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
 } 
 
-
 ################################################
 ## NEW PLOT - SPATIAL HOTSPOTS OF CHANGE MAPS ##
 ################################################
@@ -556,7 +555,7 @@ for (scenario in scenarios) {
 new_data <- abund_t90 %>% 
   group_by(scenario, x, y) %>%
   summarise_at(vars(abund_change_prop), list(mean_proportion_of_change_across_species = mean))
-  
+
 
 spatial_hotspots_map <- ggplot() +
   geom_raster(data = new_data, aes(x = x, y = -y, fill = mean_proportion_of_change_across_species)) +
@@ -566,7 +565,7 @@ spatial_hotspots_map <- ggplot() +
                                   max(new_data$mean_proportion_of_change_across_species, na.rm = TRUE)),
                        values = scales::rescale(c(min(new_data$mean_proportion_of_change_across_species, na.rm = TRUE), 0, 
                                                   max(new_data$mean_proportion_of_change_across_species, na.rm = TRUE)))) +
-  labs(x = "Cell longitude ", y ="Cell latitude", fill = "MPCAS") +
+  labs(x = "Cell longitude ", y ="Cell latitude", fill = "MPCAS (Mean proportion \nof change \nacross species)") +
   theme(legend.position = c(0.9,0.1), panel.background =  element_blank(), # no background grids
         # facets identification customization
         strip.background =  element_rect(fill = "grey94", color = "black"), 
@@ -576,7 +575,10 @@ spatial_hotspots_map <- ggplot() +
         legend.title = element_text(face = "bold"),
         legend.text=element_text(size = 6),
         axis.title = element_text(face = "bold"))
+spatial_hotspots_map
 ggsave(plot = spatial_hotspots_map, file = "spatial_hotspots_map.tiff",  bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200, compression = "lzw")
+
+ggsave(plot = spatial_hotspots_map, file = "spatial_hotspots_map.png",  bg = 'white', width = 230, height = 210, units = "mm", dpi = 1200)
 
 
 ## HABITAT SUITABILITY CHANGE SPATIAL MAP ##
