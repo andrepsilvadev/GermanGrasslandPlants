@@ -31,7 +31,7 @@ library(RColorBrewer) # palletes for the maps on step 4
 # STEP 1 - IMPORT AND MERGE ALL OUTPUT FILES #
 ##############################################
 
-setwd("C:/Users/maria/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE")
+setwd("C:/Users/user/OneDrive - Universidade de Lisboa (1)/ANDRE/BLIZ_1.6_ANDRE")
 
 #all_data <- list.files(recursive = T) %>% #get a list of the paths to datasets files
  # map_dfr(function(path) {
@@ -173,6 +173,9 @@ line_plots_theme <- theme_minimal() +
 ## ABUNDANCE THROUGH TIME ##
 ############################
 
+#specify labels for plot
+years <- c(2050, 2070, 2090)
+
 abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario, color = scenario)) + 
   geom_line() + # line plot
   #geom_ribbon(aes(x = t, ymin = abundance_mean - abundance_sd, ymax = abundance_mean + abundance_sd, fill = scenario), alpha = 0.3, colour = NA) + # add ribbon with standard deviation values
@@ -191,6 +194,7 @@ abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario
              scale_y_continuous(limits = c(2.5e+07, 9e+07)))) +  
   scale_fill_viridis_d(option = "D") + # colour palette
   scale_color_viridis_d(option = "D") + 
+  scale_x_continuous(breaks = c(40,60, 80), labels = years) +
   labs(x = "Year" , y = "Abundance", color = "Scenarios", fill = "Scenarios") +  
   line_plots_theme + 
   theme(legend.position="bottom")
