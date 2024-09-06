@@ -106,7 +106,7 @@ all_data <- all_data %>%
                            "FagusSylvatica" = "Fagus sylvatica",
                            "PlantagoLanceolata" = "Plantago lanceolata",
                            "PoaPratensis" = "Poa pratensis",
-                           "PoaTrivialis" = "PoaTrivialis",      
+                           "PoaTrivialis" = "Poa trivialis",      
                            "RanunculusAcris" = "Ranunculus acris",
                            "RanunculusBulbosus" = "Ranunculus bulbosus",
                            "RumexAcetosa" = "Rumex acetosa",
@@ -127,8 +127,7 @@ data_all_mean_stdev<-all_data[, c(1,4:10)]
 mean_stDEV <- data_all_mean_stdev %>%
   dplyr::group_by(species, scenario, t) %>%
   dplyr::summarise(across(c(abundance, reproduction, carry, habitat, bevmort), .fns = list(mean = mean, sd = sd), na.rm = TRUE), .groups = 'drop') %>%
-  dplyr::mutate(across(where(is.numeric), round, 3)) %>% 
-  dplyr::filter(t>25) #remove burn-in
+  dplyr::mutate(across(where(is.numeric), round, 3))  
 
 # write table into .csv file
 write.csv(mean_stDEV, "mean_values_31Aug.csv", row.names=FALSE)
@@ -173,8 +172,9 @@ line_plots_theme <- theme_minimal() +
 ## ABUNDANCE THROUGH TIME ##
 ############################
 
+#WAITING FOR NEW INFO FROM JANA/ANDRE
 #specify labels for plot
-years <- c(2050, 2070, 2090)
+years <- c(2011, 2030, 2060, 2090)
 
 abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario, color = scenario)) + 
   geom_line() + # line plot
@@ -194,10 +194,11 @@ abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario
              scale_y_continuous(limits = c(2.5e+07, 9e+07)))) +  
   scale_fill_viridis_d(option = "D") + # colour palette
   scale_color_viridis_d(option = "D") + 
-  scale_x_continuous(breaks = c(40,60, 80), labels = years) +
+  scale_x_continuous(breaks = c(1, 40, 60, 90), labels = years) +
   labs(x = "Year" , y = "Abundance", color = "Scenarios", fill = "Scenarios") +  
   line_plots_theme + 
   theme(legend.position="bottom")
+abund_plot
 
 # save ABUNDANCE THROUGH TIME plot
 #ggsave(plot = abund_plot, file = "./29Aug/Figure2_Abundance_through_time31Aug.tiff", bg = 'white', width = 200, height = 180, units = "mm", dpi = 1200, compression = "lzw")
