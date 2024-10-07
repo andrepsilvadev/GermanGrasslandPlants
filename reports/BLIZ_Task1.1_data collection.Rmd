@@ -1,0 +1,287 @@
+---
+title: "Code for Task 1.1 - data collection - BLIZ"
+author: "Leticia Duarte"
+output: 
+  html_notebook:
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 13px;
+  }
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+h1 { /* Header 1 */
+  font-size: 20px;
+  font-weight: bold;
+}
+h2 { /* Header 2 */
+    font-size: 17px;
+  font-weight: bold;
+}
+h3 { /* Header 3 */
+    font-size: 15px;
+  font-weight: bold;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre{ /* Code block - determines code spacing between lines */
+    font-size: 12px;
+}
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+    margin-top: 24xpx;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+#read script
+source("BLIZ_Task1.1_data collection.R")
+
+```
+
+
+# Summary of the analyses
+
+In **Step 1**, we prepared the candidate species for both Bavaria and Baden-Württemberg (BW).
+
+- For Bavaria we used the species found in https://www.lfu.bayern.de/natur/rote_liste_pflanzen/doc/pflanzen/rl_pflanzen_nach_kategorien.pdf
+
+- For both Bavaria and BW we went to https://www.gbif.org/occurrence/search?occurrence_status=present&q= to download the species list with occurrences, and used the following filters: 
+  - "Scientific name" - "Tracheophyta"
+  - "Location" - "Including coordinates"
+  - "Administrative areas" - "Bayern" or Baden-Württemberg"
+  
+
+In **Step 2** we looked for the available traits and checked which species had information for all traits.
+
+For each trait we did the following steps:
+
+- Download data
+- Check units and methods used, and filter the useful data
+- Select the columns with the measurements, methods and units
+- Format data
+- Merge data with the candidate species list prepared in Step 1
+
+After checking and preparing all traits (Seed number, Germination rate, Carrying capacity, Wetmass, and Dispersal distance), we joined them, in order to check which species had information for them most of them. Because carrying capacity was a limiting variable, we decided to use the mean of the data from species of the same genus for the species that had missing this data. We did the same for the Germination rate for 2 species. We calculated the Mortality rate using an allometric equation based on the values of wetmass.
+
+Finally, we formatted all the data to compile information for the chosen species in one table, and calculated the mean and standard deviation for each.
+
+
+In **Step 3**, we calculated the number of occurrences for the chosen species.
+
+
+In **Step 4**, we mapped the occurrence data of the chosen species
+
+
+Detailed information about each step can be found in the code below.
+
+<span style="color: darkorange;">All data files necessary can be found in https://drive.google.com/drive/folders/1x93UjAnduPXwROqXVnQeJ4JQbdVoKeom?usp=sharing
+
+
+# 1 - Candidate species
+
+
+## Species from Bavaria
+
+Download red list of vascular plants from Bavaria (https://www.lfu.bayern.de/natur/rote_liste_pflanzen/doc/pflanzen/rl_pflanzen_nach_kategorien.pdf) and convert to csv
+
+Download list of species with occurrences in Bavaria from GBIF database (https://www.gbif.org/occurrence/search?occurrence_status=present&q=), and use the following filters: 
+  - "Scientific name" - "Tracheophyta"
+  - "Location" - "Including coordinates"
+  - "Administrative areas" - "Bayern"
+  Download with option "species list"
+  
+(All occurrence data in BIEN is from GBIF, so there was no need to use both databases)
+  
+## Species from Baden-Württemberg (BW)
+
+Download list of species with occurrences in BW from GBIF database (https://www.gbif.org/occurrence/search?occurrence_status=present&q=), and use the following filters: 
+  - "Scientific name" - "Tracheophyta"
+  - "Location" - "Including coordinates"
+  - "Administrative areas" - "Baden-Württemberg"
+  Download - option "species list"
+
+
+## Candidate species list
+
+Create candidate species list by joining all previous data.
+Number of candidate species:
+```{r, echo=FALSE}
+
+length(unique(BB_Species$species)) #calculate number of candidate species
+
+```
+
+# 2 - Traits
+
+## A - Number of Seeds - reproductive rate
+
+Download "Seed number" file from LEDA database (https://uol.de/en/landeco/research/leda/data-files)
+
+Files (.txt) from this database have formatting problems - need to remove manually the first few rows to be read
+
+Filtered only values with **reproduction.unit.measured = 'per ramet/tussock or individual plant'.
+
+## B - Germination rate
+
+Download "95 - Seed germination rate" from TRY database (https://www.try-db.org/TryWeb/Home.php)
+
+Germination rate is calculated by dividing the number of seeds that sprout by the total number of seeds, and then multiplying that number by 100.
+
+Most if not all data for this trait is based in controlled laboratory experiments &rarr; Germination rate in ideal conditions.
+
+
+### B.1 - Add genus data for species missing
+
+Because there are some data missing for some species, we will use the values from other species of the same genus to estimate values for those species. In this case we did this only for *Eriophorum vaginatum*. 
+
+
+## C - Carrying capacity
+= maximum planting density
+
+Download "601 - Species tolerance to planting density" from TRY database (https://www.try-db.org/TryWeb/Home.php)
+
+This same data exists in FloraWeb.
+
+reference: The PLANTS Database, United States Department of Agriculture, National Resources Conservation Service. http://plants.usda.gov/
+measurement remarks:
+These data have been gathered from the scientific literature, gray literature, agency documents, and the knowledge of plant specialists. Characteristics data values are best viewed as approximations since they are primarily based on field observations and estimates from the literature, not precise measurements or experiments. Characteristics for the many conservation plant species native to the U.S. were typically provided by experts familiar with the species in its natural setting. Most values given apply to plants nationwide. Many values are relative to other species since absolute figures are not available.
+
+
+### C.1 - Add genus data for species with missing data
+
+Because there are some data missing for some species, we will use the values from other species of the same genus to estimate values for those species. In this case we did this for all species, except *Achillea millefolium*.
+
+Converted plants/acre to plants/m^2^ &rarr; 1 acre = 4046.86 m^2^
+
+## D - Wetmass
+
+ - Download "3025 - plant wet biomass" from TRY database (https://www.try-db.org/TryWeb/Home.php)
+
+Didn't need to filter units or methods because they were all the same (g and whole plant fresh mass).
+
+ - Download data from Supporting Information of "PlantNE: a global database of plant biomass from nitrogen-addition experiments" (https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2840)
+
+Used the biomass data from the control groups used in this study (column CK_M).
+Filtered data with unit "g" and "g " because they are the same, and to be consistent.
+
+
+ - Join data from both databases
+
+## E - Mortality rate
+
+Mortality rate was calculated from biomass with the allometric equation from Marba, N., Duarte, C.M. & Agustí S. (2007) Allometric scaling of plant life history. Proceedings of the National Academy of Sciences of the United States of America, 104, 15777–15780. (https://www.pnas.org/doi/abs/10.1073/pnas.0703476104)
+
+“Marba et al. (2007)  applied allometric theory to the relationship between size and important life-history parameters and reported that mortality and birth rates scaled as **the –0.25 power and life span as the 0.25 power of plant mass from phytoplankton to trees**.” (https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2745.2008.01415.x) 
+
+**Equation: wetmass^-0.25**
+
+Excluded data with wetmass < 1g
+
+
+## F - Dispersal Distance
+
+Download data from the Supporting Information of "Seed dispersal distance classes and dispersal modes for the European flora" (https://onlinelibrary.wiley.com/doi/full/10.1111/geb.13712)
+
+**Data is in dispersal classes:**
+
+Dispersal distance classes from Vittoz, P., & Engler, R. (2007). Seed dispersal distances: A typology based on dispersal modes and plant traits. Botanica Helvetica, 117, 109–124.
+
+(dispersal distances in m for 50 and 99% seeds)
+
+- class 1: 0.1-1 m
+
+- class 2: 1-5 m
+
+- class 3: 2-15 m
+
+- class 4: 40-150 m
+
+- class 5: 10-500 m
+
+- class 6: 400-1500 m 
+
+- (class 7: 500-5000 m - excluded this class because it's dispersal by humans and that data exists only for some species)
+
+**&rarr; Used the 99% distribution kernels as the maximum distance**
+
+**&rarr; Used the 50% distribution kernels as the mean distance**
+
+
+## G - Lambda
+
+Download Compadre database (https://compadre-db.org/Data/Compadre)
+
+Filtered only unmanipulated data, i.e., with no grazing, mowing or harvesting disturbance, or manipulated experimentally.
+
+### G.1 - Add genus data for species missing
+
+Because there are some data missing for some species, we will use the values from other species of the same genus to estimate values for those species. In this case we did this for all species, except *Achillea millefolium*, *Fagus sylvatica*, and *Ranunculus acris*.
+
+
+# 2.1 - Merge all traits
+
+Merge all trait data and check which species have data for all of them.
+
+```{r, echo=FALSE}
+
+unique(traits_all$species)  #check the number of species with data for all traits
+
+```
+
+
+# 2.2 - Final trait table
+
+Calculate the mean and standard deviation for each species for each trait.
+
+```{r, echo=FALSE}
+
+print(final)
+
+```
+
+
+# 3 - Occurrence data
+
+
+## Calculate occurrences in Bavaria + BW for each species
+
+Used the same files that were downloaded previously for step 1.
+
+```{r, echo=FALSE}
+
+print(occur)
+
+```
+
+
+## Calculate occurrences worldwide for each species
+
+Go to https://www.gbif.org/occurrence/search?occurrence_status=present&q= to download the species list with occurrences, and use the following filters: 
+  - "Scientific name" - "Tracheophyta"
+  - "Location" - "Including coordinates"
+  Download - option "species list"
+
+```{r, echo=FALSE}
+
+print(occur_sp_ww)
+
+```
+
+
+
+<br><br>
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
