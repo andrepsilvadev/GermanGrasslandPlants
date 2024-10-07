@@ -1,4 +1,4 @@
-# MetaRange
+# Climate and land-use change synergies on temperate grassland plants using a metabolic range model (MetaRange)
 
 Folder structure:
 
