@@ -100,6 +100,9 @@ gc() #remove unecessary memory
 rm(data_control)
 rm(datacontrol) 
 
+
+## FOR THE 105 DATA ##
+
 #split all +5% sensitivity runs into 6 separate dataframes (one for each of the parameters changed)
 split_combined_105 <- split(combined_data_105, f = combined_data_105$VAR_CHANGED)
 rm(combined_data_105) #remove previous dataframe to save space

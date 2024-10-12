@@ -131,7 +131,6 @@ mean_stDEV <- data_all_mean_stdev %>%
   dplyr::mutate(across(where(is.numeric), round, 3)) %>% 
   filter(t>=25)
 
-
 # write table into .csv file
 write.csv(mean_stDEV, "mean_values_25Sept_without_2sps.csv", row.names=FALSE)
 invisible(gc())
