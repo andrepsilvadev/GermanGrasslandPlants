@@ -27,6 +27,27 @@ library(openxlsx) # to write excel workbooks/sheets
 # STEP 1 - IMPORT AND MERGE ALL OUTPUT FILES #
 ##############################################
 
+# merge model output into one complete dataset
+
+# all_data <- list.files(recursive = T) %>% # get a list of the paths to datasets files
+#   map_dfr(function(path) {
+#   #retrieve any characters from the beginning of the path until /
+#   foldername <- str_extract(path, "^.+(?=/)")
+#   fread(path) %>% # import the files  
+#   mutate(folder = foldername) # add a new collumn with the folder name
+# })
+# invisible(gc())
+# 
+# all_data <- all_data %>%
+#  separate(folder, c("date", "time", "species", "scenario"), sep = "_", remove = FALSE) %>% # takes a VERY long time ^(more than 40 minutes)
+#   dplyr::select(-c("folder", "date", "time"))
+# invisible(gc())
+
+# write tsv file with all species in all scenarios
+#write_tsv(all_data, "full_dataset.tsv")
+
+
+
 # Import the complete dataset 
 all_data <- fread("./output_september/full_dataset.tsv", integer64 = "numeric")
 invisible(gc())
@@ -88,13 +109,13 @@ all_data <- all_data %>%
   dplyr::filter(! species %in% c("Viola arvensis","Eriophorum vaginatum" )) # remove 2 sps 
 invisible(gc())
 
-# check if species were removed
-unique(all_data$species)
-unique(all_data$scenario)
-
-#cehck why abundance mismatch plots dont show teh control scenario
-checks <- all_data[all_data$scenario == "control" & all_data$t >=25, c(1,2,3,6,14), ]
-summary(checks$habitat_change)
+# # check if species were removed
+# unique(all_data$species)
+# unique(all_data$scenario)
+# 
+# #cehck why abundance mismatch plots dont show teh control scenario
+# checks <- all_data[all_data$scenario == "control" & all_data$t >=25, c(1,2,3,6,14), ]
+# summary(checks$habitat_change)
 
 ##########################################
 # STEP 3 - CREATE POPULATION LEVEL PLOTS #
@@ -178,6 +199,7 @@ abund_plot <- ggplot(mean_stDEV, aes(x = t, y = abundance_mean, group = scenario
 #ggsave(plot = abund_plot, file = "Abundance_through_time_Sept_without2sps_paletteR4.tiff", bg = 'white', width = 200, height = 180, units = "mm", dpi = 1200, compression = "lzw")
 
 
+# quantification of abundance
 abund_quant <- mean_stDEV %>% 
   dplyr::select(species, scenario, t, abundance_mean) %>% 
   dplyr::filter(t %in% c(25, 115)) %>% 
@@ -362,11 +384,12 @@ abund_mismatch_plot2 <- ggplot(abund_mismatch_df, aes(x=as.factor(scenario), y =
 #ggsave(plot = abund_mismatch_plot2, file = "Abundance_mismatch_SeptWITHOUT_OUTLIERS_without2sps_original.tiff",  bg = 'white', width = 250, height = 280, units = "mm", dpi = 1200, compression = "lzw")
 invisible(gc())
 
-###########################################################################################
-# NEW IDEA FROM JULIANO TO COLOR CODE WITH RED AND BLUE BASED ON MEAN VALUES "TENDENCIES" #
-###########################################################################################
+##############################################################################
+# NEW IDEA TO COLOR CODE WITH RED AND BLUE BASED ON MEAN VALUES "TENDENCIES" #
+##############################################################################
 
-# with red for negative and blue for positive values
+
+# with red for negative and blue for positive values ---------------------------
 
 # calculate the mean abund_mismatch for each combination of scenario and species
 abund_mismatch_df <- abund_mismatch_df %>%
@@ -397,7 +420,10 @@ abund_mismatch_plot_red_blue <- ggplot(abund_mismatch_df, aes(x = as.factor(scen
 #ggsave(plot = abund_mismatch_plot_red_blue, file = "Abundance_mismatch_SeptWITHOUT_OUTLIERS_without2sps_red_blu.tiff",  bg = 'white', width = 250, height = 280, units = "mm", dpi = 1200, compression = "lzw")
 invisible(gc())
 
-# with a gradient across all species
+
+
+
+# with a gradient across all species -------------------------------------------
 
 # the gradient fill here is based on the mean_abund_mismatch
 abund_mismatch_plot_gradient <- ggplot(abund_mismatch_df, aes(x = as.factor(scenario), y = abund_mismatch, fill = mean_abund_mismatch)) +
@@ -419,11 +445,10 @@ abund_mismatch_plot_gradient <- ggplot(abund_mismatch_df, aes(x = as.factor(scen
 #ggsave(plot = abund_mismatch_plot_gradient, file = "Abundance_mismatch_SeptWITHOUT_OUTLIERS_without2sps_gradient.tiff",  bg = 'white', width = 250, height = 280, units = "mm", dpi = 1200, compression = "lzw")
 invisible(gc())
 
-###########################################################
-# with a gradient within each facet (within each species) #
-###########################################################
-# probably the option to go for
 
+
+
+# with a gradient within each facet (within each species) ----------------------
 
 # normalize the mean_abund_mismatch within each species
 abund_mismatch_df <- abund_mismatch_df %>%
@@ -453,9 +478,10 @@ abund_mismatch_plot_GWF <- ggplot(abund_mismatch_df, aes(x = as.factor(scenario)
 #ggsave(plot = abund_mismatch_plot_GWF, file = "Abundance_mismatch_SeptWITHOUT_OUTLIERS_without2sps_GWF.tiff",  bg = 'white', width = 250, height = 280, units = "mm", dpi = 1200, compression = "lzw")
 invisible(gc())
 
-################################################################################
-# with a gradient within each facet (within each species) and with outliers #
-################################################################################
+
+
+
+# with a gradient within each facet (within each species) and with outliers ----
 
 abund_mismatch_plot_GWF_withoutliers <- ggplot(abund_mismatch_df, aes(x = as.factor(scenario), y = abund_mismatch, fill = mean_abund_mismatch_scaled)) +
   geom_boxplot() + 
@@ -472,7 +498,6 @@ abund_mismatch_plot_GWF_withoutliers <- ggplot(abund_mismatch_df, aes(x = as.fac
         axis.text.x = element_text(angle = 60, vjust = 1.0, hjust = 1.0),
         legend.position = "bottom")
 # abund_mismatch_plot_GWF_withoutliers
-
 
 # saving the plot
 # ggsave(plot = abund_mismatch_plot_GWF_withoutliers, file = "Abundance_mismatch_SeptWITH_OUTLIERS_without2sps_GWF.tiff",  bg = 'white', width = 250, height = 280, units = "mm", dpi = 1200, compression = "lzw")
@@ -538,7 +563,7 @@ for (scenario in scenarios) {
 }
 
 
-
+# quantification of the abundance change 
 abund_chnage_prop_quant <- all_data %>% 
   dplyr::select(species, scenario, t, x, y, abund_change) %>% 
   dplyr::filter(t %in% c(115)) %>% 
@@ -612,20 +637,12 @@ ggsave(plot = spatial_hotspots_map, file = "Spatial_hotspots_map_without2sps.tif
 ## CORRELATION PLOTS ##
 #######################
 
-##############
-## new idea ## JUST THE TREND LINES
-##############
+# new idea with just the trend lines -------------------------------------------
 
 corr_data_scenarios <- all_data[all_data$t == 115, c(9,10,12,14)]
 corr_data_scenarios$abund_change <- as.numeric(corr_data_scenarios$abund_change) #the lm and the labels functions do not work with the integer64 format thta this column had previously
 colnames(corr_data_scenarios)
 
-range(corr_data_scenarios$habitat_change[corr_data_scenarios$scenario == "RCP2.6"], na.rm =TRUE)
-range(corr_data_scenarios$habitat_change[corr_data_scenarios$scenario == "RCP8.5"], na.rm =TRUE)
-
-
-
-# 
 # function to write the model equation and the r2 
 lm_labels <- function(df) {
   mod <- lm(abund_change ~ habitat_change, data = df, na.action = "na.exclude")
@@ -644,7 +661,7 @@ labels_scenarios <- corr_data_scenarios %>%
 gc() 
 
 correlation_plot <- ggplot(corr_data_scenarios, aes(x = habitat_change, y = abund_change, color = scenario)) +
-  #geom_point(alpha = 0.3) +
+  #geom_point(alpha = 0.3) + # uncomment here to get the data points in the plot
   facet_wrap(species ~ ., ncol = 3, scales = "free_y") + # one pannel for each species
   labs(x = "Habitat suitability change", y = "Abundance change") + # label axis
   stat_smooth(method = "lm", formula = y~x) + # plot a linear regression model for each specieS
