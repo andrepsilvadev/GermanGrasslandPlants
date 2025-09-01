@@ -2,7 +2,7 @@
 #################################################
 ####                                         ####
 ####   Script 3 - Create background data     ####
-####   Date: July 8th, 2025                  ####
+####   Date: September 1st, 2025             ####
 ####   Author: Afonso Barrocal               ####
 ####                                         ####
 #################################################
@@ -94,6 +94,9 @@ bgSpecies <- list(landuse_data,landuse_data,landuse_data,
 # create species vector
 species <- unique(species_regions$species)
 
+# create directory
+dir.create(paste0("./../data/landuse/species"))
+
 # create loop to create background for each species
 for(i in 1:length(species)){
   # extract species' ecoregions
@@ -109,6 +112,10 @@ for(i in 1:length(species)){
   # plot
   plot(bgSpecies[[i]][[1]], main = species[i])
   plot(vect(ne_countries()), add = TRUE, lwd = 0.45)
+  # export data
+  writeRaster(x = bgSpecies[[i]],
+              filename = paste0("./../data/landuse/species/",sub(pattern = " ", replacement = "_", x = species[i]),".tif"),
+              overwrite = TRUE)
   # make progress bar
   svMisc::progress(i,length(species))
   # remove unnecessary objects
