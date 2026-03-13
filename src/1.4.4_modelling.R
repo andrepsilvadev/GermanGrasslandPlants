@@ -2,7 +2,7 @@
 #############################################################
 ####                                                     ####
 ####   Script 3 - Modelling the species distributions    #### 
-####   Date: August 7th, 2025                            ####
+####   Date: September 9th, 2025                         ####
 ####   Author: Afonso Barrocal                           ####
 ####                                                     ####
 #############################################################
@@ -12,120 +12,80 @@
 # run library script and load data
 source("./1.4.0_libraries.R")
 load("./1.4.2_occurrence_processing.RData")
-source("./1.4.3_background_data.R")
-
-#### Step 1 - Prepare data and parameters for modelling ####
 
 # create dummy list
-models <- list()
+bgSpecies <- list()
+
+# import background data
+for(i in seq_along(unique(ocr$species))){
+  # import background for species "i"
+  bgSpecies[[i]] <- rast(paste0("./../data/landuse/species/",sub(pattern = " ",replacement = "_", x = unique(ocr$species)[i]),".tif"))
+  # remove i-value
+  rm(i)
+  invisible(gc())
+}
+
+# create directories
+dir.create("./../output/Surfaces")
+
+#### Step 1 - Load projection layers ####
+
+
+
+#### Step 2 - Modelling and projections ####
 
 # create species vector
-species <- unique(ocr$species)
-
-#### Step 2 - Modelling ###
-
-# create new directory
-dir.create("./../output/MaxEnt")
-
-# create loop to model species distributions
-for(i in seq_along(species)){
-  # create new directory
-  dir.create(paste0("./../output/MaxEnt/",sub(pattern = " ", replacement = "_", species[i])))
-  # setting seed for reproducibility
-  set.seed(12251424)
-  # create models
-  models[[i]] <- MaxEnt(bgSpecies[[i]],
-                        p = ocr[ocr$species == species[i],c("x","y")],
-                        nbg = 5*nrow(ocr[ocr$species == species[i],c("x","y")]),
-                        args = c('jackknife=true',
-                                 'writebackgroundpredictions=true',
-                                 'responsecurves=true',
-                                 'outputformat=logistic',
-                                 'replicates=5',
-                                 'writeplotdata=true',
-                                 'linear=true',
-                                 'quadratic=true',
-                                 'product=true',
-                                 'threshold=false',
-                                 'hinge=false',
-                                 'betamultiplier=0.05'),
-                        silent = TRUE,
-                        path = paste0("./../output/MaxEnt/",sub(pattern = " ", replacement = "_", species[i])))
-  # remove i-value
-  rm(i)
-  invisible(gc())
-}
-
-# create directory
-dir.create(paste0("./../output/MaxEnt"))
-
-# create dummy lists
-data <- list()
-cv <- list()
-tuning <- list()
-
-# create loop to process data
-for(i in seq_along(bgSpecies)){
-  # create species vector
-  species <- unique(ocr$species)
-  # subset data
-  subSp <- ocr[ocr$species == species[i],c("presence","x","y")]
-  # process data (turn into SpatVector)
-  subSp <- vect(subSp, crs = "epsg:4326",geom = c("x","y"))
-  # create pseudo absences
-  subSp <- bm_PseudoAbsences(resp.var = subSp,
-                             expl.var = bgSpecies[[i]],
-                             nb.absences = 10000,
-                             nb.rep = 5,
-                             strategy = 'random',
-                             seed.val = 20000517)
-  # process data (turn into data frame)
-  subSp <- as.data.frame(subSp) %>% dplyr::select(xy.x,xy.y,sp)
-  # process data (change column names)
-  colnames(subSp) <- c("x","y","presence")
-  # process data (turn into SpatVector)
-  subSp <- vect(subSp, crs = "epsg:4326",geom = c("x","y"))
-  # create directory
-  dir.create(paste0("./../output/MaxEnt/",sub(" ","_",species[i])))
-  # process data (prepare data for modelling)
-  data[[i]] <- BIOMOD_FormatingData(resp.var = subSp,
-                                    expl.var = bgSpecies[[i]],
-                                    resp.name = species[i],
-                                    dir.name = paste0("./../output/MaxEnt/",sub(" ","_",species[i])),
-                                    seed.val = 20001705)
-  # process data (prepare cross-validation)
-  cv[[i]] <- bm_CrossValidation(bm.format = data[[i]],
-                                strategy = "kfold",
-                                nb.rep = 5,
-                                k = 5)
-  # prepare tuning parameters
-  tuning[[i]] <- bm_ModelingOptions(data.type = "binary",
-                                    models = c("MAXNET"),
-                                    strategy = "default",
-                                    user.val = user.val, # Phillips and Dudík (2008)
-                                    bm.format = data[[i]])
-  # remove unnecessary objects
-  rm(species,subSp,MAXENTOptions,user.val,i)
-  invisible(gc())
-}
-
-# remove unnecessary objects
-rm(ocr,bgSpecies)
-invisible(gc())
-
-#### Step 2 - Modelling ####
+sp <- unique(ocr$species)
 
 # create dummy list
-models <- list()
+myBiomodModelOut <- list()
 
-# create loop to model the species distributions
-for(i in seq_along(data)){
-  # modelling species distributions
-  models[[i]] <- BIOMOD_Modeling(bm.format = data[[i]],
-                                 models = c("MAXNET"),
-                                 CV.perc = 0,
-                                 seed.val = 20000517)
-  # remove i-value
-  rm(i)
+for(i in seq_along(sp)){
+  # start timer
+  tic()
+  # subset data
+  subdata <- ocr[ocr$species == sp[i],]
+  # formatting data
+  formatted_data <- BIOMOD_FormatingData(
+    resp.var = subdata$presence,              # response variable (1 or 0)
+    expl.var = bgSpecies[[i]],                # environmental variables
+    resp.xy = subdata[, c("x", "y")],         # coordinates
+    resp.name = sub(pattern = " ",
+                    replacement = ".",
+                    x = sp[i]),               # a short name for the species
+    dir.name = paste0("./../output/Surfaces/",
+                      sub(pattern = " ", 
+                          replacement = "_",
+                          x = sp[i])),
+    PA.nb.rep = 1,                            # number of pseudo-absence runs
+    PA.nb.absences = sum(subdata$presence)*5, # number of pseudo-absence points
+    PA.strategy = 'random',                   # strategy to generate pseudo-absences
+    na.rm = TRUE,
+    filter.raster = TRUE,
+    seed.val = 123
+  )
+  # formatting modelling options
+  myBiomodOptions <- BIOMOD_ModelingOptions()
+  # modelling
+  myBiomodModelOut[[i]] <- BIOMOD_Modeling(
+    bm.format = formatted_data,              # from BIOMOD_FormatingData()
+    modeling.id = "My_Model_ID",
+    models = c('ANN', "XGBOOST",
+               'RF', "MAXNET"),              # choose from supported algos
+    CV.strategy = 'random',
+    CV.nb.rep = 3,
+    CV.perc = 0.8,                           # use 0–1 format (not 0–100)
+    OPT.strategy = 'bigboss',                # built-in tuned model options
+    # Alternatively: bm.options = myOptions  # for custom settings via bm_ModelingOptions()
+    metric.eval = c('TSS', 'ROC'),
+    var.import = 3,
+    seed.val = 123                           # for reproducibility
+  )
+  # make progress bar
+  progress(i,5)
+  # end timer
+  toc()
+  # remove unnecessary objects
+  rm(subdata,formatted_data,myBiomodOptions,i)
   invisible(gc())
 }
