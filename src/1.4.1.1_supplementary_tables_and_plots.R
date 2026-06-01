@@ -404,7 +404,7 @@ clockifyR(
   plot(S1[[2]], main = names(S1)[2],
        mar = c(2, 1.5, 5, 4.5),
        range = c(1000,1800),
-       col = colorspace::diverging_hcl(300, h = c(250, 10), c = 100, l = c(37, 88), power = c(0.7, 1.7))),
+       col = colorRampPalette(c("white", "darkred"))(300)),
   par(mfrow = c(1,1)),
   title(main = "Changes in climate (%)\n(SSP1 - RCP 2.6: 2015 to 2100)",
         cex.main = 1, line = 2),
@@ -420,7 +420,7 @@ clockifyR(
   plot(S2[[2]], main = names(S2)[2],
        mar = c(2, 1.5, 5, 4.5),
        range = c(1000,1800),
-       col = colorspace::diverging_hcl(300, h = c(250, 10), c = 100, l = c(37, 88), power = c(0.7, 1.7))),
+       col = colorRampPalette(c("white", "darkred"))(300)),
   par(mfrow = c(1,1)),
   title(main = "Changes in climate (%)\n(SSP5 - RCP 8.5: 2015 to 2100)",
         cex.main = 1, line = 2),
@@ -429,4 +429,172 @@ clockifyR(
 
 # remove unnecessary objects
 rm(S1,S2,shape,dataset)
+invisible(gc())
+
+#### Step 4 - Soil variables' tables ####
+
+# import root trait database
+rooTrait <- read.csv("./../data/soil/GRooT-Data-master/DataFiles/GRooTAggregateSpeciesVersion/GRooTAggregateSpeciesVersion.csv")
+
+# process data
+rooTrait <- rooTrait[rooTrait$traitName == "Rooting_depth",-3]
+
+# create genus vector
+genVectAll <- unique(rooTrait$genusTNRS)
+
+# create target species vector
+SpeciesTarget <- c("Achillea millefolium","Plantago lanceolata","Ranunculus acris",
+                   "Ranunculus bulbosus","Poa pratensis","Poa trivialis",
+                   "Veronica chamaedrys","Rumex acetosa")
+
+# retrieve taxonomic data
+TaxAll <- unique(BIEN_taxonomy_genus(genVectAll)[,c(4,5,7)])
+TaxTarget <- BIEN_taxonomy_species(SpeciesTarget)[,4:7] %>% distinct()
+
+# process data (change column names)
+colnames(TaxAll)[3] <- "Species"
+colnames(TaxTarget)[4] <- "Species"
+
+# create species column
+rooTrait$Species <- paste0(rooTrait$genusTNRS," ",rooTrait$speciesTNRS)
+
+# process data (add taxonomic columns)
+rooTrait <- rooTrait %>%
+  left_join(TaxAll)
+
+# remove unnecessary objects
+rm(TaxAll,genVectAll,SpeciesTarget)
+invisible(gc())
+
+# extract species
+rootSp <- rooTrait[rooTrait$Species %in% TaxTarget$Species,c(8,5)]
+
+# extract genus
+rootGen <- rooTrait[rooTrait$genusTNRS %in% unique(TaxTarget$scrubbed_genus),c(1,5)]
+
+# process data
+rootGen <- rootGen[rootGen$genusTNRS %in% c("Poa","Ranunculus"),] %>%
+  summarise("Rooting_depth" = mean(medianSpecies),
+            .by = genusTNRS)
+
+# extract family
+rootFam <- rooTrait[rooTrait$scrubbed_family %in% unique(TaxTarget$scrubbed_family),c(10,5)] %>% distinct()
+
+# process data
+rootFam <- rootFam[rootFam$scrubbed_family %in% unique(TaxTarget[TaxTarget$scrubbed_genus %in% c("Veronica","Rumex"),"scrubbed_family"]),] %>%
+  summarise("Rooting_depth" = mean(medianSpecies),
+            .by = scrubbed_family) %>%
+  left_join(TaxTarget) %>%
+  filter(Species %in% c("Veronica chamaedrys","Rumex acetosa")) %>%
+  unique() %>% distinct() %>%
+  dplyr::select(Species,Rooting_depth)
+
+# process data (add type column)
+rootFam$Type <- "Family average"
+rootSp$Type <- "Species median"
+
+# process data (change column's name)
+colnames(rootSp)[2] <- "Rooting_depth"
+
+# create dataframe
+rootGen <- data.frame(`Species` = c("Poa trivialis",
+                                    "Ranunculus acris",
+                                    "Ranunculus bulbosus"),
+                      `Type` = "Genus average",
+                      `Rooting_depth` = c(rootGen$Rooting_depth[1],
+                                          rootGen$Rooting_depth[2],
+                                          rootGen$Rooting_depth[2]))
+
+# process data merge all data
+rooTarget <- rbind(rootGen,rootFam,rootSp)
+
+# remove unnecessary objects
+rm(rooTrait,rootGen,rootFam,rootSp,TaxTarget)
+invisible(gc())
+
+# export correlation data as a comma separated value (.csv) table
+write.csv(as.data.frame(rooTarget), file = "./../output/supplementary/rooting_depth.csv")
+
+# export correlation data as an Excel (.xlsx) table
+write_xlsx(as.data.frame(rooTarget), path = "./../output/supplementary/rooting_depth.xlsx")
+
+# create path vectors
+paths <- list.files(path = "./../data/soil/nitro/", pattern = ".tif", full.names = TRUE)
+
+# import predictions rasters
+nitro <- rast(paths)
+
+# process data
+paths <- substr(paths,nchar("./../data/soil/nitro/nitrogen__"),nchar(paths))
+paths <- substr(paths,1,nchar(paths)-nchar("cm_mean_1000.tif"))
+
+# process data (change layers' names)
+names(nitro) <- paths
+
+# remove unnecessary objects
+rm(paths)
+invisible(gc())
+
+# create path vectors
+paths <- list.files(path = "./../data/soil/ph/", pattern = ".tif", full.names = TRUE)
+
+# import predictions rasters
+ph <- rast(paths)
+
+# process data
+paths <- substr(paths,nchar("./../data/soil/ph/phh2o__"),nchar(paths))
+paths <- substr(paths,1,nchar(paths)-nchar("cm_mean_1000.tif"))
+
+# process data (change layers' names)
+names(ph) <- paths
+
+# remove unnecessary objects
+rm(paths)
+invisible(gc())
+
+# create dummy data frame
+corr_nitro <- list()
+corr_ph <- list()
+
+# create loop to create favourability and suitability values data frame
+for(i in seq_along(names(nitro))){
+  # extract predictions values
+  corr_nitro[[i]] <- values(nitro[[i]], na.rm = TRUE)
+  corr_ph[[i]] <- values(ph[[i]], na.rm = TRUE)
+  # remove i-value
+  rm(i)
+  invisible(gc())
+}
+
+# process data
+corr_nitro <- do.call(cbind,corr_nitro)
+corr_ph <- do.call(cbind,corr_ph)
+
+# process data (drop NAs)
+corr_nitro <- corr_nitro %>% 
+  as.data.frame() %>%
+  drop_na()
+corr_ph <- corr_ph %>% 
+  as.data.frame() %>%
+  drop_na()
+
+# process data
+corr_nitro <- corr_nitro[,c(1,5,3,4,6,2)]
+corr_ph <- corr_ph[,c(1,5,3,4,6,2)]
+
+# calculate Pearson's correlation
+corrTable_nitro <- cor(corr_nitro,use = "pairwise.complete.obs", method = "pearson")
+corrTable_ph <- cor(corr_ph,use = "pairwise.complete.obs", method = "pearson")
+
+# export correlation data as a comma separated value (.csv) table
+write.csv(as.data.frame(corrTable_nitro), file = "./../output/supplementary/corrTable_nitro.csv")
+write.csv(as.data.frame(corrTable_ph), file = "./../output/supplementary/corrTable_ph.csv")
+
+# export correlation data as an Excel (.xlsx) table
+write_xlsx(as.data.frame(corrTable_nitro), path = "./../output/supplementary/corrTable_nitro.xlsx")
+write_xlsx(as.data.frame(corrTable_ph), path = "./../output/supplementary/corrTable_ph.xlsx")
+
+# remove unnecessary objects
+rm(corrTable_nitro,corrTable_ph,
+   corr_nitro,corr_ph)
 invisible(gc())

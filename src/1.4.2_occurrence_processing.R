@@ -343,17 +343,17 @@ ocr_plot <- ggplot() +
   geom_point(data = ocr[ocr$`Time Range` == "1981-2020",],
              aes(x = x, y = y,
                  col = `Time Range`),
-             size = .00001,
-             alpha = .15) +
+             size = .00001) +
   geom_point(data = ocr[ocr$`Time Range` == "2014-2016",],
              aes(x = x, y = y,
                  col = `Time Range`),
              size = .00001) +
   facet_wrap(species~.) +
-  scale_color_manual(values = c("1981-2020" = "maroon1",
-                                "2014-2016" = "#E9002D")) +
+  scale_color_manual(values = c("1981-2020" = "orange2",
+                                "2014-2016" = "darkblue")) +
   labs(x = "Longitude", y = "Latitude", caption = "CRS: WGS84") +
   coord_sf(expand = FALSE) +
+  guides(color = guide_legend(override.aes = list(size = 2))) +
   theme_bw()
 ocr_plot <- ocr_plot + theme(strip.text = element_text(face = "italic"))
 

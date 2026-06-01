@@ -147,7 +147,7 @@ for(i in seq_along(year_one)){
   # process land use file (create 0s)
   luFile[is.na(luFile)] <- 0
   # process land-use file (make CRS compatible)
-  crs(luFile) <- crs(world)
+  luFile <- project(luFile,world)
   # process land use file (crop and mask by world shape)
   luFile <- mask(crop(luFile, ext(world)),world)
   # export data
@@ -155,7 +155,7 @@ for(i in seq_along(year_one)){
               filename = paste0(substr(year_one[i],1,nchar(year_one[i])-3),"_full.tif"),
               overwrite = TRUE)
   # process land-use file (make CRS compatible)
-  crs(luFile) <- crs(shape)
+  luFile <- project(luFile,shape)
   # process land use file (crop and mask by study area's shape)
   luFile <- mask(crop(luFile, ext(shape)),shape)
   # export data
@@ -180,7 +180,7 @@ for(i in seq_along(landuse_list)){
   # process land use file (create 0s)
   luFile[is.na(luFile)] <- 0
   # process land-use file (make CRS compatible)
-  crs(luFile) <- crs(shape)
+  luFile <- project(luFile,shape)
   # process land use file (crop and mask by study area's shape)
   luFile <- mask(crop(luFile, ext(shape)),shape)
   # export data
@@ -198,16 +198,7 @@ invisible(gc())
 ## Step 4a: Import sample file
 
 # import data
-sample <- nc2tif("./../data/landuse/ssp1_rcp26/GCAM_Demeter_LU_ssp1_rcp26_modelmean_2015.nc")
-
-# process land-use data (make CRS compatible)
-crs(sample) <- crs(shape)
-
-# process land-use data (make extent compatible)
-sample <- crop(sample, ext(shape))
-
-# process land-use data (make extent compatible)
-sample <- mask(sample, shape, touches = TRUE)
+sample <- rast("./../data/landuse/ssp1_rcp26/GCAM_Demeter_LU_ssp1_rcp26_modelmean_2015.tif")
 
 ## Step 4b: Year-One data
 
@@ -215,10 +206,16 @@ sample <- mask(sample, shape, touches = TRUE)
 year_one <- c(chelsa4r(var = "tas", year = 2015),
               chelsa4r(var = "pr", year = 2015))
 
-# process year-one climate data (make CRS compatible)
-crs(year_one) <- crs(sample)
+# import study area's shapefile
+shape <- read_sf("./../data/unzipped_data/Spatial/Bav&BW.shp")
 
-# process lyear-one climate data (make extent compatible)
+# process study area's shape file (turn sf to SpatVector)
+shape <- vect(st_union(shape))
+
+# process year-one climate data (make CRS compatible)
+year_one <- project(year_one,shape)
+
+# process year-one climate data (make extent compatible)
 year_one <- crop(year_one, ext(shape))
 
 # process year-one climate data (make extent compatible)
@@ -309,7 +306,7 @@ dummy <- rast(nrow = 20880,
               xmax = 179.9999,
               ymin = -90.00014,
               ymax = 83.99986)
-crs(dummy)<- "epsg:4326"
+dummy <- project(dummy,"epsg:4326")
 
 # transfer 
 pr_126 <- c(dummy,dummy,dummy)
@@ -354,10 +351,10 @@ rm(intervals)
 invisible(gc())
 
 # process 30-year time climate data (make CRS compatible)
-crs(tas_126) <- crs(sample)
-crs(tas_585) <- crs(sample)
-crs(pr_126) <- crs(sample)
-crs(pr_585) <- crs(sample)
+tas_126 <- project(tas_126, shape)
+tas_585 <- project(tas_585, shape)
+pr_126 <- project(pr_126, shape)
+pr_585 <- project(pr_585, shape)
 
 # process 30-year time climate data (make extent compatible)
 tas_126 <- crop(tas_126, ext(shape))
@@ -444,7 +441,113 @@ rm(tas_126,tas_585,pr_126,pr_585,
    sample,shape,fedexR)
 invisible(gc())
 
-#### Step 5 - Make supplementary tables and plots ####
+#### Step 5 - Process soil data ####
+
+## Step 5a: Import data
+
+# create path vectors
+paths <- list.files(path = "./../data/soil/nitro/", pattern = ".tif", full.names = TRUE)
+
+# import predictions rasters
+nitro <- rast(paths)
+
+# process data
+paths <- substr(paths,nchar("./../data/soil/nitro/nitrogen__"),nchar(paths))
+paths <- substr(paths,1,nchar(paths)-nchar("cm_mean_1000.tif"))
+
+# process data (change layers' names)
+names(nitro) <- paths
+
+# remove unnecessary objects
+rm(paths)
+invisible(gc())
+
+# create path vectors
+paths <- list.files(path = "./../data/soil/ph/", pattern = ".tif", full.names = TRUE)
+
+# import predictions rasters
+ph <- rast(paths)
+
+# process data
+paths <- substr(paths,nchar("./../data/soil/ph/phh2o__"),nchar(paths))
+paths <- substr(paths,1,nchar(paths)-nchar("cm_mean_1000.tif"))
+
+# process data (change layers' names)
+names(ph) <- paths
+
+# remove unnecessary objects
+rm(paths)
+invisible(gc())
+
+# process data (make raster averages)
+nitro <- mean(c(nitro[[2]],nitro[[2]],nitro[[3]],nitro[[3]],nitro[[4]],nitro[[4]],nitro[[5]],nitro[[6]]), na.rm = TRUE)
+ph <- mean(c(ph[[2]],ph[[2]],ph[[3]],ph[[3]],ph[[4]],ph[[4]],ph[[5]],ph[[6]]), na.rm = TRUE)
+
+# process soil file (create 0s)
+nitro[is.na(nitro)] <- 0
+
+# process data (merge two rasters)
+soil <- c(nitro,ph)
+
+# process data (change layer's name)
+names(soil) <- c("nitrogen","phh2o")
+
+# remove unnecessary objects
+rm(nitro,ph)
+invisible(gc())
+
+## Step 5b: Process data ##
+
+# import data
+sample <- rast("./../data/landuse/ssp1_rcp26/GCAM_Demeter_LU_ssp1_rcp26_modelmean_2015_full.tif")
+
+# process land-use file (make CRS compatible)
+soil1 <- project(soil,sample[[1]])
+
+# process year-one climate data (resampling to land-use scale)
+soil1 <- resample(soil1, sample, method = "average");plot(soil1)
+
+# export data
+writeRaster(x = soil1,
+            filename = "./../data/soil/soil_full.tif",
+            overwrite = TRUE)
+
+# remove unnecessary objects
+rm(soil1)
+invisible(gc())
+
+# import data
+sample <- rast("./../data/landuse/ssp1_rcp26/GCAM_Demeter_LU_ssp1_rcp26_modelmean_2015.tif")
+
+# import study area's shapefile
+shape <- read_sf("./../data/unzipped_data/Spatial/Bav&BW.shp")
+
+# process study area's shape file (turn sf to SpatVector)
+shape <- vect(st_union(shape))
+
+# process land-use file (make CRS compatible)
+soil2 <- project(soil,shape)
+
+# process land use file (crop and mask by study area's shape)
+soil2 <- mask(crop(soil2,ext(shape)),shape)
+
+# process year-one climate data (resampling to land-use scale)
+soil2 <- resample(soil2, sample, method = "average")
+
+# remove unnecessary objects
+rm(sample)
+invisible(gc())
+
+# export data
+writeRaster(x = soil2,
+            filename = "./../data/soil/soil.tif",
+            overwrite = TRUE)
+
+# remove unnecessary objects
+rm(shape,soil,soil2)
+invisible(gc())
+
+#### Step 6 - Make supplementary tables and plots ####
 
 # run script
 source("./1.4.1.1_supplementary_tables_and_plots.R")

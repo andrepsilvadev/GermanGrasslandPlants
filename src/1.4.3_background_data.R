@@ -48,7 +48,7 @@ invisible(gc())
 # process data (check for unique combinations)
 species_regions <- unique(species_regions) %>% drop_na()
 
-#### Step 3 - Import and process (year-one) land use data ####
+#### Step 3 - Import and process (year-one) land use data and soil data ####
 
 # create path to year one land use files
 paths <- paste0("./../data/landuse/ssp",c(1,5),"_rcp",c(26,85),"/GCAM_Demeter_LU_ssp",c(1,5),"_rcp",c(26,85),"_modelmean_2015_full.tif")
@@ -84,18 +84,21 @@ invisible(gc())
 # process data (calculate mean year-one land use)
 landuse_data <- mean(landuse_data[[1]],landuse_data[[2]])
 
+# import soil data 
+soil <- rast("./../data/soil/soil_full.tif")
+
 #### Step 4 - Generate background data for all species ####
 
 # create dummy list
-bgSpecies <- list(landuse_data,landuse_data,landuse_data,
-                  landuse_data,landuse_data,landuse_data,
-                  landuse_data,landuse_data)
+bgSpeciesLand <- list(landuse_data,landuse_data,landuse_data,
+                      landuse_data,landuse_data,landuse_data,
+                      landuse_data,landuse_data)
 
 # create species vector
 species <- unique(species_regions$species)
 
-# create directory
-dir.create(paste0("./../data/landuse/species"))
+# create directories
+dir.create(paste0("./../data/species"))
 
 # create loop to create background for each species
 for(i in 1:length(species)){
@@ -107,22 +110,27 @@ for(i in 1:length(species)){
   ecoSp <- st_union(st_make_valid(ecoSp))
   # process data (turn sf object into SpatVector object)
   ecoSp <- vect(ecoSp)
+  # process data
+  ecoSp <- project(ecoSp,landuse_data)
+  # process data (merge all rasters)
+  bgSpecies <- c(bgSpeciesLand[[i]],soil)
   # crop and mask by ecoregions
-  bgSpecies[[i]] <- mask(crop(landuse_data,ext(ecoSp)),ecoSp)
+  bgSpecies <- mask(crop(soil,ext(ecoSp), extend = TRUE),ecoSp)
   # plot
-  plot(bgSpecies[[i]][[1]], main = species[i])
+  plot(bgSpeciesLand[[i]][[1]], main = species[i])
   plot(vect(ne_countries()), add = TRUE, lwd = 0.45)
   # export data
-  writeRaster(x = bgSpecies[[i]],
-              filename = paste0("./../data/landuse/species/",sub(pattern = " ", replacement = "_", x = species[i]),".tif"),
+  writeRaster(x = bgSpecies,
+              filename = paste0("./../data/species/",sub(pattern = " ", replacement = "_", x = species[i]),".tif"),
               overwrite = TRUE)
   # make progress bar
   svMisc::progress(i,length(species))
   # remove unnecessary objects
-  rm(regions,ecoSp,i)
+  rm(regions,ecoSp,bgSpecies,i)
   invisible(gc())
 }
 
 # remove unnecessary objects
-rm(species,species_regions,ecoregions,landuse_data)
+rm(species,species_regions,ecoregions,landuse_data,
+   bgSpeciesLand,ocr,soil)
 invisible(gc())

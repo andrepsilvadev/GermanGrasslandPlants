@@ -48,7 +48,11 @@ easypackages::packages(
   "dplyr",
   "predicts",
   "biomod2",
-  prompt = TRUE
+  "tictoc",
+  "BIEN",
+  "PerformanceAnalytics",
+  "writexl",
+  prompt = FALSE
 )
 
 #### Step 3 - install packages from GitHub ####
